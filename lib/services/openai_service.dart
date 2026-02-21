@@ -4,14 +4,54 @@ import 'dart:io';
 import 'package:http/http.dart' as http;
 
 import '../config.dart';
-import '../models/analysis_result.dart';
+import '../models/chat_message.dart';
 
 class OpenAIService {
   static const String _baseUrl = 'https://api.openai.com/v1/chat/completions';
 
-  Future<AnalysisResult> analyzeImage(String imagePath) async {
+  static const String _systemPrompt =
+      'You are an algebra tutor. When given a photo of an algebra problem, '
+      'identify the problem and solve it step by step. Be clear and concise. '
+      'If the student asks follow-up questions, help them understand the '
+      'concept rather than just giving the answer.';
+
+  /// Analyzes an image and returns the initial AI response.
+  Future<String> analyzeImage(String imagePath) async {
     final bytes = await File(imagePath).readAsBytes();
     final base64Image = base64Encode(bytes);
+
+    final response = await _callApi([
+      {
+        'role': 'user',
+        'content': [
+          {
+            'type': 'text',
+            'text': 'Please solve the algebra problem in this photo.',
+          },
+          {
+            'type': 'image_url',
+            'image_url': {
+              'url': 'data:image/jpeg;base64,$base64Image',
+            },
+          },
+        ],
+      },
+    ]);
+
+    return response;
+  }
+
+  /// Sends a follow-up message with the full conversation history.
+  Future<String> sendFollowUp(List<ChatMessage> history) async {
+    final apiMessages = history.map((m) => m.toApiMap()).toList();
+    return _callApi(apiMessages);
+  }
+
+  Future<String> _callApi(List<Map<String, dynamic>> messages) async {
+    final allMessages = [
+      {'role': 'system', 'content': _systemPrompt},
+      ...messages,
+    ];
 
     final response = await http.post(
       Uri.parse(_baseUrl),
@@ -21,32 +61,7 @@ class OpenAIService {
       },
       body: jsonEncode({
         'model': 'gpt-4o',
-        'messages': [
-          {
-            'role': 'system',
-            'content': 'You are an algebra tutor. When given a photo of an '
-                'algebra problem, identify the problem and solve it step by '
-                'step. Format your response with two sections:\n'
-                'SOLUTION: The final answer\n'
-                'EXPLANATION: A clear, step-by-step explanation of how to '
-                'solve it.',
-          },
-          {
-            'role': 'user',
-            'content': [
-              {
-                'type': 'text',
-                'text': 'Please solve the algebra problem in this photo.',
-              },
-              {
-                'type': 'image_url',
-                'image_url': {
-                  'url': 'data:image/jpeg;base64,$base64Image',
-                },
-              },
-            ],
-          },
-        ],
+        'messages': allMessages,
         'max_tokens': 1024,
       }),
     );
@@ -56,8 +71,6 @@ class OpenAIService {
     }
 
     final json = jsonDecode(response.body);
-    final content = json['choices'][0]['message']['content'] as String;
-
-    return AnalysisResult.fromResponse(content);
+    return json['choices'][0]['message']['content'] as String;
   }
 }
