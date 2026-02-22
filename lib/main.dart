@@ -12,10 +12,16 @@ void main() async {
     anonKey: supabaseAnonKey,
   );
 
-  // Sign in anonymously if no existing session
   final session = Supabase.instance.client.auth.currentSession;
   if (session == null) {
-    await Supabase.instance.client.auth.signInAnonymously();
+    try {
+      await Supabase.instance.client.auth.signInAnonymously();
+      debugPrint('Anonymous sign-in successful');
+    } catch (e) {
+      debugPrint('Anonymous sign-in failed: $e');
+    }
+  } else {
+    debugPrint('Existing session found for user: ${session.user.id}');
   }
 
   runApp(const MyApp());

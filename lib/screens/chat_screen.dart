@@ -59,6 +59,13 @@ class _ChatScreenState extends State<ChatScreen> {
     }
   }
 
+  void _showError(String message) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message)),
+    );
+  }
+
   Future<void> _saveInitialConversation() async {
     if (!_supabaseService.isLoggedIn) return;
 
@@ -78,8 +85,9 @@ class _ChatScreenState extends State<ChatScreen> {
           message: message,
         );
       }
-    } catch (_) {
-      // Saving failed silently — the chat still works locally
+    } catch (e) {
+      debugPrint('Failed to save conversation: $e');
+      _showError('Could not save conversation to cloud.');
     }
   }
 
@@ -118,7 +126,10 @@ class _ChatScreenState extends State<ChatScreen> {
     if (_conversationId != null) {
       _supabaseService
           .saveMessage(conversationId: _conversationId!, message: userMessage)
-          .catchError((_) {});
+          .catchError((e) {
+        debugPrint('Failed to save user message: $e');
+        _showError('Could not save message to cloud.');
+      });
     }
 
     try {
@@ -139,7 +150,10 @@ class _ChatScreenState extends State<ChatScreen> {
               conversationId: _conversationId!,
               message: assistantMessage,
             )
-            .catchError((_) {});
+            .catchError((e) {
+          debugPrint('Failed to save AI message: $e');
+          _showError('Could not save response to cloud.');
+        });
       }
     } catch (e) {
       final errorMessage = ChatMessage(

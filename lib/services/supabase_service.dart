@@ -43,7 +43,7 @@ class SupabaseService {
     final storagePath = '$userId/$fileName';
 
     await _client.storage
-        .from('homework-images')
+        .from('algebra-homework-images')
         .upload(storagePath, file);
 
     return storagePath;
@@ -51,7 +51,7 @@ class SupabaseService {
 
   String getImageUrl(String storagePath) {
     return _client.storage
-        .from('homework-images')
+        .from('algebra-homework-images')
         .getPublicUrl(storagePath);
   }
 

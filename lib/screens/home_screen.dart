@@ -16,6 +16,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   List<Conversation> _conversations = [];
   bool _isLoading = true;
+  String? _error;
 
   @override
   void initState() {
@@ -23,45 +24,102 @@ class _HomeScreenState extends State<HomeScreen> {
     _loadConversations();
   }
 
+  void _showError(String message) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message)),
+    );
+  }
+
   Future<void> _loadConversations() async {
+    setState(() {
+      _isLoading = true;
+      _error = null;
+    });
+
     try {
       final conversations = await _supabaseService.getConversations();
       setState(() {
         _conversations = conversations;
         _isLoading = false;
       });
-    } catch (_) {
-      setState(() => _isLoading = false);
+    } catch (e) {
+      setState(() {
+        _isLoading = false;
+        _error = 'Could not load conversations.';
+      });
+      debugPrint('Failed to load conversations: $e');
     }
   }
 
   Future<void> _openConversation(Conversation conversation) async {
-    final messages = await _supabaseService.getMessages(conversation.id);
+    try {
+      final messages = await _supabaseService.getMessages(conversation.id);
 
-    if (mounted) {
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => ChatScreen(
-            imagePath: conversation.imageUrl ?? '',
-            initialResponse: '',
-            conversationId: conversation.id,
-            existingMessages: messages,
+      if (mounted) {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => ChatScreen(
+              imagePath: conversation.imageUrl ?? '',
+              initialResponse: '',
+              conversationId: conversation.id,
+              existingMessages: messages,
+            ),
           ),
-        ),
-      );
+        );
+      }
+    } catch (e) {
+      _showError('Could not open conversation.');
+      debugPrint('Failed to open conversation: $e');
     }
   }
 
   Future<void> _deleteConversation(String id) async {
-    await _supabaseService.deleteConversation(id);
-    _loadConversations();
+    try {
+      await _supabaseService.deleteConversation(id);
+      _loadConversations();
+    } catch (e) {
+      _showError('Could not delete conversation.');
+      debugPrint('Failed to delete conversation: $e');
+      _loadConversations();
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     if (_isLoading) {
       return const Center(child: CircularProgressIndicator());
+    }
+
+    if (_error != null && _conversations.isEmpty) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(32.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                Icons.cloud_off,
+                size: 80,
+                color: Colors.grey[400],
+              ),
+              const SizedBox(height: 16),
+              Text(
+                _error!,
+                textAlign: TextAlign.center,
+                style: TextStyle(fontSize: 16, color: Colors.grey[600]),
+              ),
+              const SizedBox(height: 24),
+              OutlinedButton.icon(
+                onPressed: _loadConversations,
+                icon: const Icon(Icons.refresh),
+                label: const Text('Try Again'),
+              ),
+            ],
+          ),
+        ),
+      );
     }
 
     if (_conversations.isEmpty) {

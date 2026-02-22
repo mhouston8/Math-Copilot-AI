@@ -41,8 +41,9 @@ class _ResultScreenState extends State<ResultScreen> {
         );
       }
     } catch (e) {
+      debugPrint('Failed to analyze image: $e');
       setState(() {
-        _error = e.toString();
+        _error = 'Could not analyze the image. Please check your connection and try again.';
         _isLoading = false;
       });
     }
