@@ -26,9 +26,9 @@ class _HomeScreenState extends State<HomeScreen> {
 
   void _showError(String message) {
     if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message)),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(message)));
   }
 
   Future<void> _loadConversations() async {
@@ -92,79 +92,20 @@ class _HomeScreenState extends State<HomeScreen> {
       return const Center(child: CircularProgressIndicator());
     }
 
-    if (_error != null && _conversations.isEmpty) {
-      return Center(
-        child: Padding(
-          padding: const EdgeInsets.all(32.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(
-                Icons.cloud_off,
-                size: 80,
-                color: Colors.grey[400],
-              ),
-              const SizedBox(height: 16),
-              Text(
-                _error!,
-                textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 16, color: Colors.grey[600]),
-              ),
-              const SizedBox(height: 24),
-              OutlinedButton.icon(
-                onPressed: _loadConversations,
-                icon: const Icon(Icons.refresh),
-                label: const Text('Try Again'),
-              ),
-            ],
-          ),
-        ),
-      );
-    }
-
-    if (_conversations.isEmpty) {
-      return Center(
-        child: Padding(
-          padding: const EdgeInsets.all(32.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(
-                Icons.calculate_rounded,
-                size: 100,
-                color: Theme.of(context).colorScheme.primary,
-              ),
-              const SizedBox(height: 24),
-              const Text(
-                'Welcome to\nAlgebra AI',
-                textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 16),
-              Text(
-                'Snap a photo of your algebra homework\nand let AI solve it for you.',
-                textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 16, color: Colors.grey[600]),
-              ),
-              const SizedBox(height: 48),
-              Text(
-                'Tap the Camera tab to get started',
-                style: TextStyle(fontSize: 14, color: Colors.grey[400]),
-              ),
-            ],
-          ),
-        ),
-      );
-    }
-
     return RefreshIndicator(
       onRefresh: _loadConversations,
-      child: ListView.builder(
+      child: ListView(
+        physics: const AlwaysScrollableScrollPhysics(),
         padding: const EdgeInsets.all(16),
-        itemCount: _conversations.length + 1,
-        itemBuilder: (context, index) {
-          if (index == 0) {
-            return Padding(
+        children: [
+          _buildLearningToolsSection(context),
+
+          if (_error != null && _conversations.isEmpty)
+            _buildErrorSection()
+          else if (_conversations.isEmpty)
+            _buildWelcomeSection(context)
+          else ...[
+            Padding(
               padding: const EdgeInsets.only(bottom: 16),
               child: Text(
                 'Recent Conversations',
@@ -174,42 +115,126 @@ class _HomeScreenState extends State<HomeScreen> {
                   color: Theme.of(context).colorScheme.onSurface,
                 ),
               ),
-            );
-          }
-
-          final conversation = _conversations[index - 1];
-
-          return Dismissible(
-            key: Key(conversation.id),
-            direction: DismissDirection.endToStart,
-            background: Container(
-              alignment: Alignment.centerRight,
-              padding: const EdgeInsets.only(right: 20),
-              decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.error,
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: const Icon(Icons.delete, color: Colors.white),
             ),
-            onDismissed: (_) {
-              _deleteConversation(conversation.id);
-            },
-            child: Card(
-              margin: const EdgeInsets.only(bottom: 8),
-              child: ListTile(
-                leading: const Icon(Icons.chat_bubble_outline),
-                title: Text(
-                  conversation.title,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
+            for (final conversation in _conversations)
+              Dismissible(
+                key: Key(conversation.id),
+                direction: DismissDirection.endToStart,
+                background: Container(
+                  alignment: Alignment.centerRight,
+                  padding: const EdgeInsets.only(right: 20),
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).colorScheme.error,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: const Icon(Icons.delete, color: Colors.white),
                 ),
-                subtitle: Text(_formatTimeAgo(conversation.createdAt)),
-                trailing: const Icon(Icons.chevron_right),
-                onTap: () => _openConversation(conversation),
+                onDismissed: (_) {
+                  _deleteConversation(conversation.id);
+                },
+                child: Card(
+                  margin: const EdgeInsets.only(bottom: 8),
+                  child: ListTile(
+                    leading: const Icon(Icons.chat_bubble_outline),
+                    title: Text(
+                      conversation.title,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    subtitle: Text(_formatTimeAgo(conversation.createdAt)),
+                    trailing: const Icon(Icons.chevron_right),
+                    onTap: () => _openConversation(conversation),
+                  ),
+                ),
               ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildLearningToolsSection(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Learning Tools',
+          style: TextStyle(
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+            color: Theme.of(context).colorScheme.onSurface,
+          ),
+        ),
+        const SizedBox(height: 12),
+        Wrap(
+          spacing: 12,
+          runSpacing: 12,
+          children: [
+            _LearningToolCard(
+              icon: Icons.quiz_outlined,
+              label: 'Quizzes',
+              onTap: () {
+                // Will navigate to QuizSubjectScreen
+              },
             ),
-          );
-        },
+          ],
+        ),
+        const SizedBox(height: 32),
+      ],
+    );
+  }
+
+  Widget _buildErrorSection() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 48),
+      child: Column(
+        children: [
+          Icon(Icons.cloud_off, size: 80, color: Colors.grey[400]),
+          const SizedBox(height: 16),
+          Text(
+            _error!,
+            textAlign: TextAlign.center,
+            style: TextStyle(fontSize: 16, color: Colors.grey[600]),
+          ),
+          const SizedBox(height: 24),
+          OutlinedButton.icon(
+            onPressed: _loadConversations,
+            icon: const Icon(Icons.refresh),
+            label: const Text('Try Again'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildWelcomeSection(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 48),
+      child: Column(
+        children: [
+          Icon(
+            Icons.calculate_rounded,
+            size: 100,
+            color: Theme.of(context).colorScheme.primary,
+          ),
+          const SizedBox(height: 24),
+          const Text(
+            'Welcome to\nMath AI',
+            textAlign: TextAlign.center,
+            style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 16),
+          Text(
+            'Snap a photo of your math problem\nand let AI solve it for you.',
+            textAlign: TextAlign.center,
+            style: TextStyle(fontSize: 16, color: Colors.grey[600]),
+          ),
+          const SizedBox(height: 48),
+          Text(
+            'Tap the Camera tab to get started',
+            style: TextStyle(fontSize: 14, color: Colors.grey[400]),
+          ),
+        ],
       ),
     );
   }
@@ -221,5 +246,49 @@ class _HomeScreenState extends State<HomeScreen> {
     if (diff.inHours < 24) return '${diff.inHours}h ago';
     if (diff.inDays < 7) return '${diff.inDays}d ago';
     return '${dateTime.month}/${dateTime.day}/${dateTime.year}';
+  }
+}
+
+class _LearningToolCard extends StatelessWidget {
+  const _LearningToolCard({
+    required this.icon,
+    required this.label,
+    required this.onTap,
+  });
+
+  final IconData icon;
+  final String label;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: 120,
+      height: 100,
+      child: Card(
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          onTap: onTap,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                icon,
+                size: 36,
+                color: Theme.of(context).colorScheme.primary,
+              ),
+              const SizedBox(height: 8),
+              Text(
+                label,
+                style: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 }

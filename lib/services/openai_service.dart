@@ -10,7 +10,8 @@ class OpenAIService {
   static const String _baseUrl = 'https://api.openai.com/v1/chat/completions';
 
   static const String _systemPrompt =
-      'You are an algebra tutor. When given a photo of an algebra problem, '
+      'You are a math tutor covering algebra, geometry, trigonometry, '
+      'calculus, and statistics. When given a photo of a math problem, '
       'identify the problem and solve it step by step. Be clear and concise. '
       'If the student asks follow-up questions, help them understand the '
       'concept rather than just giving the answer.';
@@ -26,7 +27,7 @@ class OpenAIService {
         'content': [
           {
             'type': 'text',
-            'text': 'Please solve the algebra problem in this photo.',
+            'text': 'Please solve the math problem in this photo.',
           },
           {
             'type': 'image_url',

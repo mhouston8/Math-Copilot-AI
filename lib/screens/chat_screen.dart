@@ -46,7 +46,7 @@ class _ChatScreenState extends State<ChatScreen> {
       _messages.add(
         ChatMessage(
           role: MessageRole.user,
-          content: 'Please solve the algebra problem in this photo.',
+          content: 'Please solve the math problem in this photo.',
         ),
       );
       _messages.add(

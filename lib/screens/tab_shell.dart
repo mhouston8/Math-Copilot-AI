@@ -24,7 +24,7 @@ class _TabShellState extends State<TabShell> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Algebra AI'),
+        title: const Text('Math AI'),
         centerTitle: true,
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
       ),
