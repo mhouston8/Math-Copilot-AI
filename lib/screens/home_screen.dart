@@ -331,7 +331,7 @@ class _HomeScreenState extends State<HomeScreen> {
             _LearningToolCard(
               icon: Icons.quiz_outlined,
               label: 'Quizzes',
-              subtitle: 'Test your math skills with instant feedback',
+              subtitle: 'Test your math skills',
               onTap: () => _showSubjectPicker(context),
             ),
           ],
