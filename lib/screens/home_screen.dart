@@ -118,6 +118,7 @@ class _HomeScreenState extends State<HomeScreen> {
           _buildScanBanner(context),
           const SizedBox(height: 16),
           _buildLearningToolsSection(context),
+          _buildQuickAccessSection(context),
 
           if (_error != null && _conversations.isEmpty)
             _buildErrorSection()
@@ -319,6 +320,14 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  void _showTutorChatPlaceholder() {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Tutor Chat quick access coming soon.'),
+      ),
+    );
+  }
+
   Widget _buildLearningToolsSection(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
     const horizontalPadding = 32.0; // ListView horizontal padding (16 * 2)
@@ -356,6 +365,33 @@ class _HomeScreenState extends State<HomeScreen> {
               onTap: _showCheatSheetsPlaceholder,
             ),
           ],
+        ),
+        const SizedBox(height: 32),
+      ],
+    );
+  }
+
+  Widget _buildQuickAccessSection(BuildContext context) {
+    final fullWidth = MediaQuery.of(context).size.width - 32;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Quick Access',
+          style: TextStyle(
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+            color: Theme.of(context).colorScheme.onSurface,
+          ),
+        ),
+        const SizedBox(height: 12),
+        _LearningToolCard(
+          width: fullWidth,
+          icon: Icons.support_agent_rounded,
+          label: 'Tutor Chat',
+          subtitle: 'Ask follow-up questions instantly',
+          onTap: _showTutorChatPlaceholder,
         ),
         const SizedBox(height: 32),
       ],
