@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 
 import '../models/conversation.dart';
 import '../services/supabase_service.dart';
 import 'chat_screen.dart';
 import 'quiz_screen.dart';
+import 'result_screen.dart';
 
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key, required this.onScanProblemTap});
-
-  final VoidCallback onScanProblemTap;
+  const HomeScreen({super.key});
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
@@ -87,6 +87,20 @@ class _HomeScreenState extends State<HomeScreen> {
       debugPrint('Failed to delete conversation: $e');
       _loadConversations();
     }
+  }
+
+  Future<void> _scanProblem() async {
+    final picker = ImagePicker();
+    final XFile? photo = await picker.pickImage(source: ImageSource.camera);
+
+    if (!mounted || photo == null) return;
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => ResultScreen(imagePath: photo.path),
+      ),
+    );
   }
 
   @override
@@ -181,7 +195,7 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
           const SizedBox(height: 14),
           FilledButton.icon(
-            onPressed: widget.onScanProblemTap,
+            onPressed: _scanProblem,
             icon: const Icon(Icons.document_scanner_outlined),
             label: const Text('Scan Problem'),
             style: FilledButton.styleFrom(

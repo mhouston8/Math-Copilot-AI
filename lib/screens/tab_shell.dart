@@ -13,14 +13,6 @@ class TabShell extends StatefulWidget {
 
 class _TabShellState extends State<TabShell> {
   int _currentIndex = 0;
-  int _cameraLaunchToken = 0;
-
-  void _openCameraTab() {
-    setState(() {
-      _cameraLaunchToken++;
-      _currentIndex = 1;
-    });
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -33,8 +25,8 @@ class _TabShellState extends State<TabShell> {
       body: IndexedStack(
         index: _currentIndex,
         children: [
-          HomeScreen(onScanProblemTap: _openCameraTab),
-          CameraScreen(launchToken: _cameraLaunchToken),
+          const HomeScreen(),
+          const CameraScreen(),
           const SettingsScreen(),
         ],
       ),
