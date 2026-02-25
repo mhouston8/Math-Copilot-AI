@@ -17,6 +17,13 @@ class OpenAIService {
       'If the student asks follow-up questions, help them understand the '
       'concept rather than just giving the answer.';
 
+  static const String _tutorChatSystemPrompt =
+      'You are a friendly math tutor helping a student in chat. '
+      'Support algebra, geometry, trigonometry, calculus, and statistics. '
+      'Explain concepts clearly with short step-by-step reasoning. '
+      'Ask a brief clarifying question when the student is vague. '
+      'Prefer teaching and checking understanding over just giving final answers.';
+
   /// Analyzes an image and returns the initial AI response.
   Future<String> analyzeImage(String imagePath) async {
     final bytes = await File(imagePath).readAsBytes();
@@ -49,6 +56,12 @@ class OpenAIService {
     return _callApi(apiMessages);
   }
 
+  /// Sends a tutor-chat message with the full in-memory chat history.
+  Future<String> sendTutorMessage(List<ChatMessage> history) async {
+    final apiMessages = history.map((m) => m.toApiMap()).toList();
+    return _callApiWithSystemPrompt(apiMessages, _tutorChatSystemPrompt);
+  }
+
   /// Generates 10 multiple-choice quiz questions for a given math subject.
   Future<List<QuizQuestion>> generateQuiz(String subject) async {
     final response = await _callApi([
@@ -73,8 +86,15 @@ class OpenAIService {
   }
 
   Future<String> _callApi(List<Map<String, dynamic>> messages) async {
+    return _callApiWithSystemPrompt(messages, _systemPrompt);
+  }
+
+  Future<String> _callApiWithSystemPrompt(
+    List<Map<String, dynamic>> messages,
+    String systemPrompt,
+  ) async {
     final allMessages = [
-      {'role': 'system', 'content': _systemPrompt},
+      {'role': 'system', 'content': systemPrompt},
       ...messages,
     ];
 

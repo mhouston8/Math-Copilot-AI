@@ -6,6 +6,7 @@ import '../services/supabase_service.dart';
 import 'chat_screen.dart';
 import 'quiz_screen.dart';
 import 'result_screen.dart';
+import 'tutor_chat_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -313,17 +314,16 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void _showCheatSheetsPlaceholder() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Cheat Sheets coming soon.'),
-      ),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(const SnackBar(content: Text('Cheat Sheets coming soon.')));
   }
 
-  void _showTutorChatPlaceholder() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Tutor Chat quick access coming soon.'),
+  void _openTutorChat() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const TutorChatScreen(),
       ),
     );
   }
@@ -390,8 +390,8 @@ class _HomeScreenState extends State<HomeScreen> {
           width: fullWidth,
           icon: Icons.support_agent_rounded,
           label: 'Tutor Chat',
-          subtitle: 'Ask follow-up questions instantly',
-          onTap: _showTutorChatPlaceholder,
+          subtitle: 'Ask Math Questions',
+          onTap: _openTutorChat,
         ),
         const SizedBox(height: 32),
       ],
@@ -490,36 +490,36 @@ class _LearningToolCard extends StatelessWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-                Icon(
-                  icon,
-                  size: 32,
-                  color: Theme.of(context).colorScheme.primary,
+              Icon(
+                icon,
+                size: 32,
+                color: Theme.of(context).colorScheme.primary,
+              ),
+              const SizedBox(height: 8),
+              Text(
+                label,
+                style: const TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w600,
                 ),
-                const SizedBox(height: 8),
-                Text(
-                  label,
-                  style: const TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                if (subtitle != null) ...[
-                  const SizedBox(height: 4),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 12),
-                    child: Text(
-                      subtitle!,
-                      textAlign: TextAlign.center,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: Theme.of(context).colorScheme.onSurfaceVariant,
-                      ),
+              ),
+              if (subtitle != null) ...[
+                const SizedBox(height: 4),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                  child: Text(
+                    subtitle!,
+                    textAlign: TextAlign.center,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
                     ),
                   ),
-                ],
+                ),
               ],
+            ],
           ),
         ),
       ),
