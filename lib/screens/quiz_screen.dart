@@ -184,10 +184,25 @@ class _QuizScreenState extends State<QuizScreen> {
             if (i < question.options.length - 1) const SizedBox(height: 12),
           ],
           const Spacer(),
-          Text(
-            'Correct: $_score   Incorrect: $incorrectCount',
-            textAlign: TextAlign.center,
-            style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              _StatChip(
+                label: 'Correct',
+                value: _score,
+                backgroundColor: Colors.green.shade50,
+                textColor: Colors.green.shade800,
+                borderColor: Colors.green.shade200,
+              ),
+              const SizedBox(width: 10),
+              _StatChip(
+                label: 'Incorrect',
+                value: incorrectCount,
+                backgroundColor: Colors.red.shade50,
+                textColor: Colors.red.shade800,
+                borderColor: Colors.red.shade200,
+              ),
+            ],
           ),
         ],
       ),
@@ -357,6 +372,42 @@ class _AnswerButton extends StatelessWidget {
                 const Icon(Icons.cancel, color: Colors.red),
             ],
           ),
+        ),
+      ),
+    );
+  }
+}
+
+class _StatChip extends StatelessWidget {
+  const _StatChip({
+    required this.label,
+    required this.value,
+    required this.backgroundColor,
+    required this.textColor,
+    required this.borderColor,
+  });
+
+  final String label;
+  final int value;
+  final Color backgroundColor;
+  final Color textColor;
+  final Color borderColor;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      decoration: BoxDecoration(
+        color: backgroundColor,
+        borderRadius: BorderRadius.circular(999),
+        border: Border.all(color: borderColor),
+      ),
+      child: Text(
+        '$label: $value',
+        style: TextStyle(
+          color: textColor,
+          fontSize: 13,
+          fontWeight: FontWeight.w600,
         ),
       ),
     );
