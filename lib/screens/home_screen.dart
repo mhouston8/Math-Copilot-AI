@@ -311,7 +311,20 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  void _showCheatSheetsPlaceholder() {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Cheat Sheets coming soon.'),
+      ),
+    );
+  }
+
   Widget _buildLearningToolsSection(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    const horizontalPadding = 32.0; // ListView horizontal padding (16 * 2)
+    const spacing = 12.0;
+    final cardWidth = (screenWidth - horizontalPadding - spacing) / 2;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -329,10 +342,18 @@ class _HomeScreenState extends State<HomeScreen> {
           runSpacing: 12,
           children: [
             _LearningToolCard(
+              width: cardWidth,
               icon: Icons.quiz_outlined,
               label: 'Quizzes',
               subtitle: 'Test your math skills',
               onTap: () => _showSubjectPicker(context),
+            ),
+            _LearningToolCard(
+              width: cardWidth,
+              icon: Icons.menu_book_outlined,
+              label: 'Cheat Sheets',
+              subtitle: 'Quick formulas and rules',
+              onTap: _showCheatSheetsPlaceholder,
             ),
           ],
         ),
@@ -408,12 +429,14 @@ class _HomeScreenState extends State<HomeScreen> {
 
 class _LearningToolCard extends StatelessWidget {
   const _LearningToolCard({
+    required this.width,
     required this.icon,
     required this.label,
     this.subtitle,
     required this.onTap,
   });
 
+  final double width;
   final IconData icon;
   final String label;
   final String? subtitle;
@@ -422,7 +445,7 @@ class _LearningToolCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      width: 180,
+      width: width,
       height: 120,
       child: Card(
         clipBehavior: Clip.antiAlias,
