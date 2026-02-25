@@ -6,7 +6,9 @@ import 'chat_screen.dart';
 import 'quiz_screen.dart';
 
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key});
+  const HomeScreen({super.key, required this.onScanProblemTap});
+
+  final VoidCallback onScanProblemTap;
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
@@ -99,6 +101,8 @@ class _HomeScreenState extends State<HomeScreen> {
         physics: const AlwaysScrollableScrollPhysics(),
         padding: const EdgeInsets.all(16),
         children: [
+          _buildScanBanner(context),
+          const SizedBox(height: 16),
           _buildLearningToolsSection(context),
 
           if (_error != null && _conversations.isEmpty)
@@ -149,6 +153,43 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
           ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildScanBanner(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: colorScheme.primaryContainer,
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Scan your math problem and get instant solutions with step-by-step explanations.',
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+              height: 1.35,
+              color: colorScheme.onPrimaryContainer,
+            ),
+          ),
+          const SizedBox(height: 14),
+          FilledButton.icon(
+            onPressed: widget.onScanProblemTap,
+            icon: const Icon(Icons.document_scanner_outlined),
+            label: const Text('Scan Problem'),
+            style: FilledButton.styleFrom(
+              minimumSize: const Size(double.infinity, 48),
+              backgroundColor: colorScheme.primary,
+              foregroundColor: colorScheme.onPrimary,
+            ),
+          ),
         ],
       ),
     );

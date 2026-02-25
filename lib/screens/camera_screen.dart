@@ -3,14 +3,49 @@ import 'package:image_picker/image_picker.dart';
 
 import 'result_screen.dart';
 
-class CameraScreen extends StatelessWidget {
-  const CameraScreen({super.key});
+class CameraScreen extends StatefulWidget {
+  const CameraScreen({super.key, this.launchToken = 0});
 
-  Future<void> _pickImage(BuildContext context, ImageSource source) async {
-    final picker = ImagePicker();
-    final XFile? photo = await picker.pickImage(source: source);
+  final int launchToken;
 
-    if (photo != null && context.mounted) {
+  @override
+  State<CameraScreen> createState() => _CameraScreenState();
+}
+
+class _CameraScreenState extends State<CameraScreen> {
+  final ImagePicker _picker = ImagePicker();
+  bool _isPicking = false;
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.launchToken > 0) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _pickFromBanner();
+      });
+    }
+  }
+
+  @override
+  void didUpdateWidget(covariant CameraScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.launchToken > oldWidget.launchToken) {
+      _pickFromBanner();
+    }
+  }
+
+  Future<void> _pickFromBanner() async {
+    if (_isPicking) return;
+    _isPicking = true;
+    await _pickImage(ImageSource.camera);
+    _isPicking = false;
+  }
+
+  Future<void> _pickImage(ImageSource source) async {
+    final XFile? photo = await _picker.pickImage(source: source);
+
+    if (!mounted) return;
+    if (photo != null) {
       Navigator.push(
         context,
         MaterialPageRoute(
@@ -49,7 +84,7 @@ class CameraScreen extends StatelessWidget {
             ),
             const SizedBox(height: 48),
             FilledButton.icon(
-              onPressed: () => _pickImage(context, ImageSource.camera),
+              onPressed: () => _pickImage(ImageSource.camera),
               icon: const Icon(Icons.camera_alt),
               label: const Text('Take Photo'),
               style: FilledButton.styleFrom(
@@ -59,7 +94,7 @@ class CameraScreen extends StatelessWidget {
             ),
             const SizedBox(height: 16),
             OutlinedButton.icon(
-              onPressed: () => _pickImage(context, ImageSource.gallery),
+              onPressed: () => _pickImage(ImageSource.gallery),
               icon: const Icon(Icons.photo_library),
               label: const Text('Choose from Gallery'),
               style: OutlinedButton.styleFrom(
