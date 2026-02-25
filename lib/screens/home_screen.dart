@@ -211,10 +211,34 @@ class _HomeScreenState extends State<HomeScreen> {
 
   void _showSubjectPicker(BuildContext context) {
     const subjects = [
-      {'label': 'Algebra', 'icon': Icons.functions},
-      {'label': 'Geometry', 'icon': Icons.square_outlined},
-      {'label': 'Trigonometry', 'icon': Icons.show_chart},
-      {'label': 'Calculus', 'icon': Icons.trending_up},
+      {
+        'label': 'Algebra',
+        'subtitle': 'Solve equations, expressions, and variables.',
+        'icon': Icons.functions,
+        'iconColor': Color(0xFF4338CA),
+        'iconBg': Color(0xFFE0E7FF),
+      },
+      {
+        'label': 'Geometry',
+        'subtitle': 'Angles, shapes, area, and spatial reasoning.',
+        'icon': Icons.square_outlined,
+        'iconColor': Color(0xFF0F766E),
+        'iconBg': Color(0xFFCCFBF1),
+      },
+      {
+        'label': 'Trigonometry',
+        'subtitle': 'Sine, cosine, tangent, and triangle relationships.',
+        'icon': Icons.show_chart,
+        'iconColor': Color(0xFFB45309),
+        'iconBg': Color(0xFFFFEDD5),
+      },
+      {
+        'label': 'Calculus',
+        'subtitle': 'Limits, derivatives, integrals, and rates of change.',
+        'icon': Icons.timeline,
+        'iconColor': Color(0xFF7E22CE),
+        'iconBg': Color(0xFFF3E8FF),
+      },
     ];
 
     showModalBottomSheet(
@@ -240,17 +264,42 @@ class _HomeScreenState extends State<HomeScreen> {
               const SizedBox(height: 8),
               for (final subject in subjects)
                 ListTile(
-                  leading: Icon(subject['icon'] as IconData),
-                  title: Text(subject['label'] as String),
+                  leading: Container(
+                    width: 36,
+                    height: 36,
+                    decoration: BoxDecoration(
+                      color: subject['iconBg'] as Color,
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Icon(
+                      subject['icon'] as IconData,
+                      color: subject['iconColor'] as Color,
+                      size: 20,
+                    ),
+                  ),
+                  title: Text(
+                    subject['label'] as String,
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  subtitle: Text(
+                    subject['subtitle'] as String,
+                    style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w400,
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    ),
+                  ),
                   trailing: const Icon(Icons.chevron_right),
                   onTap: () {
                     Navigator.pop(sheetContext);
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (_) => QuizScreen(
-                          subject: subject['label'] as String,
-                        ),
+                        builder: (_) =>
+                            QuizScreen(subject: subject['label'] as String),
                       ),
                     );
                   },
@@ -282,6 +331,7 @@ class _HomeScreenState extends State<HomeScreen> {
             _LearningToolCard(
               icon: Icons.quiz_outlined,
               label: 'Quizzes',
+              subtitle: 'Test your math skills with instant feedback',
               onTap: () => _showSubjectPicker(context),
             ),
           ],
@@ -360,18 +410,20 @@ class _LearningToolCard extends StatelessWidget {
   const _LearningToolCard({
     required this.icon,
     required this.label,
+    this.subtitle,
     required this.onTap,
   });
 
   final IconData icon;
   final String label;
+  final String? subtitle;
   final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      width: 120,
-      height: 100,
+      width: 180,
+      height: 120,
       child: Card(
         clipBehavior: Clip.antiAlias,
         child: InkWell(
@@ -379,20 +431,36 @@ class _LearningToolCard extends StatelessWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(
-                icon,
-                size: 36,
-                color: Theme.of(context).colorScheme.primary,
-              ),
-              const SizedBox(height: 8),
-              Text(
-                label,
-                style: const TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w500,
+                Icon(
+                  icon,
+                  size: 32,
+                  color: Theme.of(context).colorScheme.primary,
                 ),
-              ),
-            ],
+                const SizedBox(height: 8),
+                Text(
+                  label,
+                  style: const TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                if (subtitle != null) ...[
+                  const SizedBox(height: 4),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 12),
+                    child: Text(
+                      subtitle!,
+                      textAlign: TextAlign.center,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                  ),
+                ],
+              ],
           ),
         ),
       ),
