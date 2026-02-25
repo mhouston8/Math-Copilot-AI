@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../models/conversation.dart';
 import '../services/supabase_service.dart';
 import 'chat_screen.dart';
+import 'quiz_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -153,6 +154,59 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  void _showSubjectPicker(BuildContext context) {
+    const subjects = [
+      {'label': 'Algebra', 'icon': Icons.functions},
+      {'label': 'Geometry', 'icon': Icons.square_outlined},
+      {'label': 'Trigonometry', 'icon': Icons.show_chart},
+      {'label': 'Calculus', 'icon': Icons.trending_up},
+    ];
+
+    showModalBottomSheet(
+      context: context,
+      showDragHandle: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (sheetContext) {
+        return Padding(
+          padding: const EdgeInsets.only(bottom: 32),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 16),
+                child: Text(
+                  'Pick a Subject',
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                ),
+              ),
+              const SizedBox(height: 8),
+              for (final subject in subjects)
+                ListTile(
+                  leading: Icon(subject['icon'] as IconData),
+                  title: Text(subject['label'] as String),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () {
+                    Navigator.pop(sheetContext);
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => QuizScreen(
+                          subject: subject['label'] as String,
+                        ),
+                      ),
+                    );
+                  },
+                ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
   Widget _buildLearningToolsSection(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -173,9 +227,7 @@ class _HomeScreenState extends State<HomeScreen> {
             _LearningToolCard(
               icon: Icons.quiz_outlined,
               label: 'Quizzes',
-              onTap: () {
-                // Will navigate to QuizSubjectScreen
-              },
+              onTap: () => _showSubjectPicker(context),
             ),
           ],
         ),

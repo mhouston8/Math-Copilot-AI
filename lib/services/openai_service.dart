@@ -5,6 +5,7 @@ import 'package:http/http.dart' as http;
 
 import '../config.dart';
 import '../models/chat_message.dart';
+import '../models/quiz_question.dart';
 
 class OpenAIService {
   static const String _baseUrl = 'https://api.openai.com/v1/chat/completions';
@@ -46,6 +47,29 @@ class OpenAIService {
   Future<String> sendFollowUp(List<ChatMessage> history) async {
     final apiMessages = history.map((m) => m.toApiMap()).toList();
     return _callApi(apiMessages);
+  }
+
+  /// Generates 10 multiple-choice quiz questions for a given math subject.
+  Future<List<QuizQuestion>> generateQuiz(String subject) async {
+    final response = await _callApi([
+      {
+        'role': 'user',
+        'content': 'Generate 10 multiple-choice questions about $subject. '
+            'Each question should have exactly 4 options with one correct answer. '
+            'Return ONLY a valid JSON array with no other text. '
+            'Each object must have: '
+            '"question" (string), '
+            '"options" (array of exactly 4 strings), '
+            '"correct_index" (integer 0-3 indicating the correct option).',
+      },
+    ]);
+
+    final cleaned = response.replaceAll('```json', '').replaceAll('```', '').trim();
+    final List<dynamic> parsed = jsonDecode(cleaned) as List<dynamic>;
+
+    return parsed
+        .map((item) => QuizQuestion.fromMap(item as Map<String, dynamic>))
+        .toList();
   }
 
   Future<String> _callApi(List<Map<String, dynamic>> messages) async {
