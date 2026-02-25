@@ -147,6 +147,8 @@ class _QuizScreenState extends State<QuizScreen> {
   Widget _buildQuestionState(BuildContext context) {
     final question = _questions[_currentIndex];
     final colorScheme = Theme.of(context).colorScheme;
+    final answeredCount = _currentIndex + (_selectedIndex != null ? 1 : 0);
+    final incorrectCount = answeredCount - _score;
 
     return Padding(
       padding: const EdgeInsets.all(24),
@@ -183,7 +185,7 @@ class _QuizScreenState extends State<QuizScreen> {
           ],
           const Spacer(),
           Text(
-            'Score: $_score / ${_currentIndex + (_selectedIndex != null ? 1 : 0)}',
+            'Correct: $_score   Incorrect: $incorrectCount',
             textAlign: TextAlign.center,
             style: TextStyle(fontSize: 14, color: Colors.grey[600]),
           ),
