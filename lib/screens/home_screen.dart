@@ -4,6 +4,7 @@ import 'package:image_picker/image_picker.dart';
 import '../models/conversation.dart';
 import '../services/supabase_service.dart';
 import 'chat_screen.dart';
+import 'cheat_sheets_screen.dart';
 import 'quiz_screen.dart';
 import 'result_screen.dart';
 import 'tutor_chat_screen.dart';
@@ -313,10 +314,13 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  void _showCheatSheetsPlaceholder() {
-    ScaffoldMessenger.of(
+  void _openCheatSheets() {
+    Navigator.push(
       context,
-    ).showSnackBar(const SnackBar(content: Text('Cheat Sheets coming soon.')));
+      MaterialPageRoute(
+        builder: (context) => const CheatSheetsScreen(),
+      ),
+    );
   }
 
   void _openTutorChat() {
@@ -362,7 +366,7 @@ class _HomeScreenState extends State<HomeScreen> {
               icon: Icons.menu_book_outlined,
               label: 'Cheat Sheets',
               subtitle: 'Quick formulas and rules',
-              onTap: _showCheatSheetsPlaceholder,
+              onTap: _openCheatSheets,
             ),
           ],
         ),
