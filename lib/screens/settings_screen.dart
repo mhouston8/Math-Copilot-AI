@@ -53,7 +53,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         ListTile(
           leading: const Icon(Icons.info_outline),
           title: const Text('About'),
-          subtitle: const Text('Algebra AI Camera v1.0.0'),
+          subtitle: const Text('Math Copilot AI v1.0.0'),
         ),
       ],
     );

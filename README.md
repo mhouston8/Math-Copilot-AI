@@ -1,6 +1,6 @@
-# Algebra AI Camera
+# Math Copilot AI
 
-A Flutter app that photographs algebra homework and solves it using the OpenAI GPT-4o vision API. Users can have follow-up conversations about the problem to better understand the solution.
+A Flutter app that photographs math homework and solves it using the OpenAI GPT-4o vision API. Users can have follow-up conversations about the problem to better understand the solution.
 
 ## Tech Stack
 
@@ -8,7 +8,7 @@ A Flutter app that photographs algebra homework and solves it using the OpenAI G
 |---|---|
 | Flutter 3.41.0 | Cross-platform UI framework |
 | Dart 3.11.0 | Programming language |
-| OpenAI GPT-4o | Image analysis + algebra solving |
+| OpenAI GPT-4o | Image analysis + math tutoring |
 | Supabase | Auth, database, image storage |
 | RevenueCat | Subscriptions + paywall (planned) |
 

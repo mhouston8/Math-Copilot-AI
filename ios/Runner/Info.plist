@@ -3,7 +3,7 @@
 <plist version="1.0">
 <dict>
 	<key>NSCameraUsageDescription</key>
-	<string>This app needs camera access to photograph your algebra homework.</string>
+	<string>This app needs camera access to photograph your math homework.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>This app needs photo library access so you can select homework photos.</string>
 	<key>CADisableMinimumFrameDurationOnPhone</key>
@@ -11,7 +11,7 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>
-	<string>Flutter Ai Camera</string>
+	<string>Math Copilot AI</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
