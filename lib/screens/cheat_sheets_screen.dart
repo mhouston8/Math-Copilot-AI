@@ -16,7 +16,7 @@ class CheatSheetsScreen extends StatelessWidget {
       body: ListView.separated(
         padding: const EdgeInsets.all(16),
         itemCount: cheatSheetsData.length,
-        separatorBuilder: (_, __) => const SizedBox(height: 10),
+        separatorBuilder: (_, _) => const SizedBox(height: 10),
         itemBuilder: (context, index) {
           final sheet = cheatSheetsData[index];
           return Card(
@@ -32,9 +32,8 @@ class CheatSheetsScreen extends StatelessWidget {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => CheatSheetDetailScreen(
-                      cheatSheet: sheet,
-                    ),
+                    builder: (context) =>
+                        CheatSheetDetailScreen(cheatSheet: sheet),
                   ),
                 );
               },
@@ -68,7 +67,11 @@ class _SubjectIcon extends StatelessWidget {
   (IconData, Color, Color) _iconMeta(String id) {
     switch (id) {
       case 'algebra':
-        return (Icons.functions, const Color(0xFF4338CA), const Color(0xFFE0E7FF));
+        return (
+          Icons.functions,
+          const Color(0xFF4338CA),
+          const Color(0xFFE0E7FF),
+        );
       case 'geometry':
         return (
           Icons.square_outlined,
@@ -76,11 +79,23 @@ class _SubjectIcon extends StatelessWidget {
           const Color(0xFFCCFBF1),
         );
       case 'trigonometry':
-        return (Icons.show_chart, const Color(0xFFB45309), const Color(0xFFFFEDD5));
+        return (
+          Icons.show_chart,
+          const Color(0xFFB45309),
+          const Color(0xFFFFEDD5),
+        );
       case 'calculus':
-        return (Icons.timeline, const Color(0xFF7E22CE), const Color(0xFFF3E8FF));
+        return (
+          Icons.timeline,
+          const Color(0xFF7E22CE),
+          const Color(0xFFF3E8FF),
+        );
       default:
-        return (Icons.menu_book_outlined, Colors.blueGrey, const Color(0xFFE2E8F0));
+        return (
+          Icons.menu_book_outlined,
+          Colors.blueGrey,
+          const Color(0xFFE2E8F0),
+        );
     }
   }
 }

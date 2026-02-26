@@ -1,4 +1,4 @@
-package com.example.flutter_ai_camera
+package com.brevixventures.mathcopilotai
 
 import io.flutter.embedding.android.FlutterActivity
 

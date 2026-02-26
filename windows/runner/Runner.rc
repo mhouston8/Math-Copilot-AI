@@ -90,12 +90,12 @@ BEGIN
         BLOCK "040904e4"
         BEGIN
             VALUE "CompanyName", "com.example" "\0"
-            VALUE "FileDescription", "flutter_ai_camera" "\0"
+            VALUE "FileDescription", "Math Copilot AI" "\0"
             VALUE "FileVersion", VERSION_AS_STRING "\0"
-            VALUE "InternalName", "flutter_ai_camera" "\0"
+            VALUE "InternalName", "math_copilot_ai" "\0"
             VALUE "LegalCopyright", "Copyright (C) 2026 com.example. All rights reserved." "\0"
-            VALUE "OriginalFilename", "flutter_ai_camera.exe" "\0"
-            VALUE "ProductName", "flutter_ai_camera" "\0"
+            VALUE "OriginalFilename", "math_copilot_ai.exe" "\0"
+            VALUE "ProductName", "Math Copilot AI" "\0"
             VALUE "ProductVersion", VERSION_AS_STRING "\0"
         END
     END
