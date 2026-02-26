@@ -4,6 +4,7 @@ import 'package:image_picker/image_picker.dart';
 import '../models/conversation.dart';
 import '../services/supabase_service.dart';
 import 'chat_screen.dart';
+import 'calculator_screen.dart';
 import 'cheat_sheets_screen.dart';
 import 'quiz_screen.dart';
 import 'result_screen.dart';
@@ -332,6 +333,15 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  void _openCalculator() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const CalculatorScreen(),
+      ),
+    );
+  }
+
   Widget _buildLearningToolsSection(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
     const horizontalPadding = 32.0; // ListView horizontal padding (16 * 2)
@@ -376,7 +386,10 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildQuickAccessSection(BuildContext context) {
-    final fullWidth = MediaQuery.of(context).size.width - 32;
+    final screenWidth = MediaQuery.of(context).size.width;
+    const horizontalPadding = 32.0;
+    const spacing = 12.0;
+    final cardWidth = (screenWidth - horizontalPadding - spacing) / 2;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -390,12 +403,25 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ),
         const SizedBox(height: 12),
-        _LearningToolCard(
-          width: fullWidth,
-          icon: Icons.support_agent_rounded,
-          label: 'Tutor Chat',
-          subtitle: 'Ask Math Questions',
-          onTap: _openTutorChat,
+        Wrap(
+          spacing: 12,
+          runSpacing: 12,
+          children: [
+            _LearningToolCard(
+              width: cardWidth,
+              icon: Icons.support_agent_rounded,
+              label: 'Tutor Chat',
+              subtitle: 'Ask Math Questions',
+              onTap: _openTutorChat,
+            ),
+            _LearningToolCard(
+              width: cardWidth,
+              icon: Icons.calculate_outlined,
+              label: 'Calculator',
+              subtitle: 'Quick basic calculations',
+              onTap: _openCalculator,
+            ),
+          ],
         ),
         const SizedBox(height: 32),
       ],
