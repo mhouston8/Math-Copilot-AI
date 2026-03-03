@@ -3,6 +3,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'config.dart';
 import 'screens/tab_shell.dart';
+import 'services/revenuecat_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -21,11 +22,41 @@ void main() async {
     debugPrint('Existing session found for user: ${session.user.id}');
   }
 
+  try {
+    final revenueCatService = RevenueCatService();
+    final appUserId = Supabase.instance.client.auth.currentUser?.id;
+    await revenueCatService.initialize(appUserId: appUserId);
+    debugPrint('RevenueCat initialized');
+  } catch (e) {
+    debugPrint('RevenueCat initialization failed: $e');
+  }
+
   runApp(const MyApp());
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends StatefulWidget {
   const MyApp({super.key});
+
+  @override
+  State<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
+  final RevenueCatService _revenueCatService = RevenueCatService();
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      try {
+        await _revenueCatService.presentTemplatePaywallIfNeeded(
+          entitlementId: 'premium',
+        );
+      } catch (e) {
+        debugPrint('Failed to present launch paywall: $e');
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
