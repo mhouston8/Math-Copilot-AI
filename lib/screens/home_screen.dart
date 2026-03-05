@@ -123,11 +123,7 @@ class _HomeScreenState extends State<HomeScreen> {
           _buildLearningToolsSection(context),
           _buildQuickAccessSection(context),
 
-          if (_error != null && _conversations.isEmpty)
-            _buildErrorSection()
-          else if (_conversations.isEmpty)
-            _buildWelcomeSection(context)
-          else ...[
+          if (_error != null && _conversations.isEmpty) _buildErrorSection() else ...[
             Padding(
               padding: const EdgeInsets.only(bottom: 16),
               child: Text(
@@ -445,38 +441,6 @@ class _HomeScreenState extends State<HomeScreen> {
             onPressed: _loadConversations,
             icon: const Icon(Icons.refresh),
             label: const Text('Try Again'),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildWelcomeSection(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 48),
-      child: Column(
-        children: [
-          Icon(
-            Icons.calculate_rounded,
-            size: 100,
-            color: Theme.of(context).colorScheme.primary,
-          ),
-          const SizedBox(height: 24),
-          const Text(
-            'Welcome to\nMath Copilot AI',
-            textAlign: TextAlign.center,
-            style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
-          ),
-          const SizedBox(height: 16),
-          Text(
-            'Snap a photo of your math problem\nand let AI solve it for you.',
-            textAlign: TextAlign.center,
-            style: TextStyle(fontSize: 16, color: Colors.grey[600]),
-          ),
-          const SizedBox(height: 48),
-          Text(
-            'Tap the Camera tab to get started',
-            style: TextStyle(fontSize: 14, color: Colors.grey[400]),
           ),
         ],
       ),
