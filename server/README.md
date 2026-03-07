@@ -51,3 +51,30 @@ This section documents each dependency with:
 - `@types/cors`
   - **What:** Type definitions for CORS middleware.
   - **How:** adds TypeScript support for CORS configuration and middleware usage.
+
+# Backend Checklist Per Request
+
+Use this checklist for every protected API endpoint so behavior is consistent
+and reusable across projects.
+
+1. **Authentication check**
+   - Verify bearer token signature, expiry, issuer, and audience.
+   - Reject invalid or missing token with `401`.
+
+2. **Validation check**
+   - Validate required fields, types, and required structure.
+   - Reject malformed payloads with `400`.
+
+3. **Sanitization check**
+   - Normalize and constrain inputs (length limits, allowed enum values, max
+     payload size).
+   - Drop or reject unexpected fields.
+
+4. **Authorization / business rules check**
+   - Confirm user is allowed to perform the action (rate limits, quota,
+     subscription/entitlement, ownership rules).
+   - Reject disallowed requests with `403` or `429`.
+
+5. **Execute external/system action**
+   - Only after checks pass, call downstream services (e.g. OpenAI, database).
+   - Return structured output and consistent error shape.
