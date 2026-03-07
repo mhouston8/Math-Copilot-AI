@@ -1,6 +1,8 @@
 import { Router } from "express";
+import { requireSupabaseJwt } from "../middleware/auth";
 
 const aiRouter = Router();
+aiRouter.use(requireSupabaseJwt);
 
 aiRouter.post("/respond", (_req, res) => {
   res.status(501).json({

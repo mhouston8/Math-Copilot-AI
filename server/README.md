@@ -286,3 +286,111 @@ Scripts are command shortcuts defined in `server/package.json` under
 - `--transpile-only`
   - Skips full type checking during dev runs for faster reloads.
   - Type errors are still caught by `tsc` and editor diagnostics.
+
+# Middleware Syntax and Workflow
+
+Middleware runs between request arrival and route handlers.
+
+## Core middleware signature
+
+```ts
+(req, res, next) => { ... }
+```
+
+- `req`: incoming request data (headers, params, body, context you attach)
+- `res`: outgoing response helper
+- `next`: function that passes control to the next middleware or route handler
+
+## Request lifecycle with middleware
+
+1. Request enters app/router.
+2. Middleware executes in registration order.
+3. Middleware either:
+   - calls `next()` to continue, or
+   - sends a response and stops the chain.
+4. Final route handler runs only if previous middleware passed control.
+
+## `next()` behavior
+
+- `next()` means “continue to the next step in the chain.”
+- `next(error)` passes control to error middleware (if configured).
+- If middleware neither calls `next()` nor sends a response, request hangs.
+
+## Passing data between middleware and handlers
+
+Use request-scoped fields on `req`, for example:
+
+- auth middleware verifies token
+- sets `req.user = { id, email, role }`
+- later handlers read `req.user`
+
+In TypeScript, augment Express request types so `req.user` is typed.
+
+## Current project flow
+
+For AI routes:
+
+1. `index.ts` mounts `aiRouter` at `/api/v1/ai`
+2. `ai.ts` applies `requireSupabaseJwt` with `aiRouter.use(...)`
+3. If token is valid, auth middleware calls `next()`
+4. Endpoint handler runs
+5. If token is invalid/missing, middleware returns `401` and handler does not run
+
+## Common mistakes to avoid
+
+- forgetting `return` after sending an error response
+- forgetting to call `next()` on success
+- throwing from async middleware without `try/catch`
+- storing request-specific data in globals instead of `req`
+
+# Request Anatomy (Headers, Body, Params, Query)
+
+This section documents where request data lives and when to use each part.
+
+## Headers
+
+Metadata sent with the request.
+
+- Example: `Authorization: Bearer <token>`
+- Express access: `req.header("authorization")` or `req.headers`
+- Typical use: auth, content type, tracing IDs
+
+## Body
+
+Main payload data, usually for `POST`, `PUT`, and `PATCH`.
+
+- Example JSON body:
+  ```json
+  {
+    "messages": [
+      { "role": "user", "content": "Explain factoring." }
+    ]
+  }
+  ```
+- Express access: `req.body`
+- Typical use: structured request input
+
+## Params (Path Params)
+
+Dynamic values embedded in the URL path.
+
+- Route pattern example: `/users/:userId/messages/:messageId`
+- Request example: `/users/123/messages/abc`
+- `:` means “dynamic path segment”
+- Express access:
+  - `req.params.userId` -> `"123"`
+  - `req.params.messageId` -> `"abc"`
+
+## Query String (Query Params)
+
+Optional URL modifiers after `?`.
+
+- Example: `/messages?limit=20&cursor=abc&sort=desc`
+- Express access: `req.query`
+- Typical use:
+  - filtering
+  - pagination
+  - sorting
+  - feature/behavior flags (`stream=true`)
+
+Query params are not database-specific; they are general request options.
