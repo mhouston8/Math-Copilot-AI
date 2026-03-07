@@ -78,3 +78,145 @@ and reusable across projects.
 5. **Execute external/system action**
    - Only after checks pass, call downstream services (e.g. OpenAI, database).
    - Return structured output and consistent error shape.
+
+# API Contract (Stable Shapes)
+
+Define and keep these shapes stable early. This reduces client churn and makes
+the API reusable across projects.
+
+## Global conventions
+
+- **Base path:** `/api/v1`
+- **Content-Type:** `application/json`
+- **Auth header on protected endpoints:** `Authorization: Bearer <token>`
+
+## Global response envelopes
+
+### Success envelope
+
+```json
+{
+  "data": {}
+}
+```
+
+### Error envelope
+
+```json
+{
+  "error": {
+    "code": "ERROR_CODE",
+    "message": "Human readable message",
+    "details": {}
+  }
+}
+```
+
+`details` is optional and can contain validation errors or context.
+
+## Endpoint contracts
+
+### POST `/api/v1/ai/respond`
+
+**Required request fields**
+
+```json
+{
+  "messages": [
+    { "role": "user", "content": "How do I factor x^2 - 5x + 6?" }
+  ]
+}
+```
+
+**Rules**
+- `messages` is required, array, and non-empty.
+- Each message requires:
+  - `role`: one of `system | user | assistant`
+  - `content`: non-empty string
+
+**Success response**
+
+```json
+{
+  "data": {
+    "content": "Assistant response text"
+  }
+}
+```
+
+### POST `/api/v1/ai/analyze-image`
+
+**Required request fields**
+
+```json
+{
+  "imageBase64": "<base64-image-string>",
+  "prompt": "Please solve the math problem in this photo."
+}
+```
+
+**Rules**
+- `imageBase64` is required and size-limited.
+- `prompt` is required and non-empty.
+
+**Success response**
+
+```json
+{
+  "data": {
+    "content": "Assistant response text"
+  }
+}
+```
+
+### POST `/api/v1/ai/generate-quiz`
+
+**Required request fields**
+
+```json
+{
+  "subject": "Algebra"
+}
+```
+
+**Rules**
+- `subject` is required and non-empty.
+
+**Success response**
+
+```json
+{
+  "data": {
+    "questions": [
+      {
+        "question": "What is ...?",
+        "options": ["A", "B", "C", "D"],
+        "correct_index": 1
+      }
+    ]
+  }
+}
+```
+
+### GET `/api/v1/health`
+
+**Success response**
+
+```json
+{
+  "data": {
+    "status": "ok"
+  }
+}
+```
+
+## Standard error codes
+
+- `UNAUTHORIZED` (`401`)
+- `VALIDATION_FAILED` (`400`)
+- `PAYLOAD_TOO_LARGE` (`413`)
+- `FORBIDDEN` (`403`)
+- `RATE_LIMITED` (`429`)
+- `UPSTREAM_ERROR` (`502`)
+- `INTERNAL_ERROR` (`500`)
+- `NOT_IMPLEMENTED` (`501`)
