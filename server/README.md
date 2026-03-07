@@ -220,3 +220,69 @@ the API reusable across projects.
 - `UPSTREAM_ERROR` (`502`)
 - `INTERNAL_ERROR` (`500`)
 - `NOT_IMPLEMENTED` (`501`)
+
+# URL Structure Cheat Sheet
+
+Use this formula:
+
+`<scheme>://<host>:<port>/<base>/<resource>/<action>?<query>`
+
+## URL parts
+
+- **scheme/protocol:** `http` or `https`
+- **host:** domain or host name (e.g. `localhost`, `api.example.com`)
+- **port:** optional when non-default (e.g. `3000`)
+- **base path:** API namespace + version (e.g. `/api/v1`)
+- **resource/action path:** endpoint path (e.g. `/ai/respond`)
+- **query params:** optional request modifiers (e.g. `?limit=20&cursor=abc`)
+
+## Current project examples
+
+### Local
+
+- `GET http://localhost:3000/api/v1/health`
+- `POST http://localhost:3000/api/v1/ai/respond`
+- `POST http://localhost:3000/api/v1/ai/analyze-image`
+- `POST http://localhost:3000/api/v1/ai/generate-quiz`
+
+### Production (Render)
+
+- `GET https://<your-service>.onrender.com/api/v1/health`
+- `POST https://<your-service>.onrender.com/api/v1/ai/respond`
+- `POST https://<your-service>.onrender.com/api/v1/ai/analyze-image`
+- `POST https://<your-service>.onrender.com/api/v1/ai/generate-quiz`
+
+## Path vs query vs body
+
+- **Path params:** identify a resource, e.g. `/users/:id/messages/:messageId`
+- **Query params:** filtering/sorting/pagination, e.g. `?limit=20`
+- **Body (JSON):** payload for `POST`/`PATCH`, sent in request body (not URL)
+
+# Scripts
+
+Scripts are command shortcuts defined in `server/package.json` under
+`"scripts"`.
+
+## Available scripts
+
+- `npm run dev`
+  - Runs: `ts-node-dev --respawn --transpile-only src/index.ts`
+  - Purpose: local development with auto-restart on file changes.
+
+- `npm run build`
+  - Runs: `tsc`
+  - Purpose: compile TypeScript from `src/` into JavaScript in `dist/`.
+
+- `npm run start`
+  - Runs: `node dist/index.js`
+  - Purpose: run compiled server output (production style).
+
+## Dev flags explained
+
+- `--respawn`
+  - Fully restarts the Node process whenever watched files change.
+  - Useful when startup logic/env setup must re-run cleanly.
+
+- `--transpile-only`
+  - Skips full type checking during dev runs for faster reloads.
+  - Type errors are still caught by `tsc` and editor diagnostics.
