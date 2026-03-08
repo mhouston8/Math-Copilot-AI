@@ -1,6 +1,10 @@
 import { Router } from "express";
 import { requireSupabaseJwt } from "../middleware/auth";
-import { respond, type ChatMessageInput } from "../services/openaiService";
+import {
+  generateQuiz,
+  respond,
+  type ChatMessageInput,
+} from "../services/openaiService";
 
 const aiRouter = Router();
 aiRouter.use(requireSupabaseJwt);
@@ -85,13 +89,31 @@ aiRouter.post("/analyze-image", (_req, res) => {
   });
 });
 
-aiRouter.post("/generate-quiz", (_req, res) => {
-  res.status(501).json({
-    error: {
-      code: "NOT_IMPLEMENTED",
-      message: "POST /api/v1/ai/generate-quiz is not implemented yet.",
-    },
-  });
+aiRouter.post("/generate-quiz", async (req, res) => {
+  const { subject } = req.body as { subject?: unknown };
+  if (typeof subject !== "string" || subject.trim().length === 0) {
+    return res.status(400).json({
+      error: {
+        code: "VALIDATION_FAILED",
+        message: "subject is required and must be a non-empty string.",
+      },
+    });
+  }
+
+  try {
+    const questions = await generateQuiz(subject.trim());
+    return res.status(200).json({
+      data: { questions },
+    });
+  } catch (error) {
+    console.error("AI generate-quiz failed:", error);
+    return res.status(502).json({
+      error: {
+        code: "UPSTREAM_ERROR",
+        message: "Failed to generate quiz.",
+      },
+    });
+  }
 });
 
 export { aiRouter };

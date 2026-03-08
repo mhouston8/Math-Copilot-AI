@@ -343,6 +343,38 @@ For AI routes:
 - throwing from async middleware without `try/catch`
 - storing request-specific data in globals instead of `req`
 
+# Local Endpoint Test Examples
+
+Use these examples to quickly verify endpoints while developing.
+
+Before running requests:
+- start server with `npm run dev`
+- provide a valid Supabase access token in `TOKEN`
+
+## POST `/api/v1/ai/respond`
+
+```bash
+curl -X POST "http://localhost:3000/api/v1/ai/respond" \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer $TOKEN" \
+  -d '{
+    "messages": [
+      { "role": "user", "content": "Explain factoring x^2 - 5x + 6." }
+    ]
+  }'
+```
+
+## POST `/api/v1/ai/generate-quiz`
+
+```bash
+curl -X POST "http://localhost:3000/api/v1/ai/generate-quiz" \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer $TOKEN" \
+  -d '{
+    "subject": "Algebra"
+  }'
+```
+
 # Request Anatomy (Headers, Body, Params, Query)
 
 This section documents where request data lives and when to use each part.
