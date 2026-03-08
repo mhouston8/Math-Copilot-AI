@@ -12,16 +12,31 @@ void main() async {
 
   await Supabase.initialize(url: supabaseUrl, anonKey: supabaseAnonKey);
 
+  Supabase.instance.client.auth.onAuthStateChange.listen((authState) {
+    final event = authState.event;
+    final session = authState.session;
+    debugPrint('Supabase auth event: $event');
+    if (session != null) {
+      debugPrint('Supabase session user: ${session.user.id}');
+      debugPrint('Supabase session expiresAt: ${session.expiresAt}');
+      debugPrint('Supabase access token: ${session.accessToken}');
+    }
+  });
+
   final session = Supabase.instance.client.auth.currentSession;
   if (session == null) {
     try {
       await Supabase.instance.client.auth.signInAnonymously();
       debugPrint('Anonymous sign-in successful');
+      debugPrint(
+        'Supabase access token: ${Supabase.instance.client.auth.currentSession?.accessToken}',
+      );
     } catch (e) {
       debugPrint('Anonymous sign-in failed: $e');
     }
   } else {
     debugPrint('Existing session found for user: ${session.user.id}');
+    debugPrint('Supabase access token: ${session.accessToken}');
   }
 
   try {
