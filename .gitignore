@@ -49,5 +49,6 @@ app.*.map.json
 
 #Dependencies
 server/node_modules
+server/dist/
 
 server/.env
