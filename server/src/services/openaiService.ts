@@ -23,6 +23,7 @@ const client = new OpenAI({ apiKey: openaiApiKey });
 const defaultSystemPrompt =
   "You are a math tutor covering algebra, geometry, trigonometry, calculus, " +
   "and statistics. Explain clearly with concise, step-by-step reasoning.";
+const imageAnalysisPrompt = "Please solve the math problem in this photo.";
 
 export async function respond(messages: ChatMessageInput[]): Promise<string> {
   const completion = await client.chat.completions.create({
@@ -78,4 +79,25 @@ export async function generateQuiz(subject: string): Promise<QuizQuestion[]> {
   }
 
   return questions;
+}
+
+export async function analyzeImage(imageBase64: string): Promise<string> {
+  const imageDataUrl = `data:image/jpeg;base64,${imageBase64}`;
+
+  const completion = await client.chat.completions.create({
+    model: "gpt-4o",
+    messages: [
+      { role: "system", content: defaultSystemPrompt },
+      {
+        role: "user",
+        content: [
+          { type: "text", text: imageAnalysisPrompt },
+          { type: "image_url", image_url: { url: imageDataUrl } },
+        ],
+      },
+    ],
+    max_tokens: 1024,
+  });
+
+  return completion.choices[0]?.message?.content?.trim() ?? "";
 }

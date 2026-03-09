@@ -140,8 +140,9 @@ class OpenAIService {
       throw Exception('No Supabase auth token available.');
     }
 
+    final requestUrl = '$backendBaseUrl$endpointPath';
     final response = await http.post(
-      Uri.parse('$backendBaseUrl$endpointPath'),
+      Uri.parse(requestUrl),
       headers: {
         'Content-Type': 'application/json',
         'Authorization': 'Bearer $token',
@@ -149,11 +150,40 @@ class OpenAIService {
       body: jsonEncode(body),
     );
 
-    final decoded = jsonDecode(response.body) as Map<String, dynamic>;
+    final responseBody = response.body;
+    final contentType = response.headers['content-type'] ?? 'unknown';
+    Map<String, dynamic>? decoded;
+    try {
+      final parsed = jsonDecode(responseBody);
+      if (parsed is Map<String, dynamic>) {
+        decoded = parsed;
+      }
+    } catch (_) {
+      // Non-JSON responses are handled below with a clearer error message.
+    }
+
     if (response.statusCode != 200) {
-      final error = decoded['error'] as Map<String, dynamic>?;
+      final error = decoded?['error'] as Map<String, dynamic>?;
       final message = error?['message'] ?? 'Request failed.';
-      throw Exception('API error (${response.statusCode}): $message');
+      final bodySnippet =
+          responseBody.length > 160
+              ? '${responseBody.substring(0, 160)}...'
+              : responseBody;
+      throw Exception(
+        'API error (${response.statusCode}) from $requestUrl: $message '
+        '(content-type: $contentType, body starts with: $bodySnippet)',
+      );
+    }
+
+    if (decoded == null) {
+      final bodySnippet =
+          responseBody.length > 160
+              ? '${responseBody.substring(0, 160)}...'
+              : responseBody;
+      throw Exception(
+        'Expected JSON response from $requestUrl, but received '
+        'content-type "$contentType" with body starting: $bodySnippet',
+      );
     }
 
     return decoded;

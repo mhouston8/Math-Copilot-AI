@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { requireSupabaseJwt } from "../middleware/auth";
 import {
+  analyzeImage,
   generateQuiz,
   respond,
   type ChatMessageInput,
@@ -80,13 +81,31 @@ aiRouter.post("/respond", async (req, res) => {
   }
 });
 
-aiRouter.post("/analyze-image", (_req, res) => {
-  res.status(501).json({
-    error: {
-      code: "NOT_IMPLEMENTED",
-      message: "POST /api/v1/ai/analyze-image is not implemented yet.",
-    },
-  });
+aiRouter.post("/analyze-image", async (req, res) => {
+  const { image_base64 } = req.body as { image_base64?: unknown };
+  if (typeof image_base64 !== "string" || image_base64.trim().length === 0) {
+    return res.status(400).json({
+      error: {
+        code: "VALIDATION_FAILED",
+        message: "image_base64 is required and must be a non-empty string.",
+      },
+    });
+  }
+
+  try {
+    const content = await analyzeImage(image_base64.trim());
+    return res.status(200).json({
+      data: { content },
+    });
+  } catch (error) {
+    console.error("AI analyze-image failed:", error);
+    return res.status(502).json({
+      error: {
+        code: "UPSTREAM_ERROR",
+        message: "Failed to analyze image.",
+      },
+    });
+  }
 });
 
 aiRouter.post("/generate-quiz", async (req, res) => {
