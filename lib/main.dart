@@ -19,7 +19,6 @@ void main() async {
     if (session != null) {
       debugPrint('Supabase session user: ${session.user.id}');
       debugPrint('Supabase session expiresAt: ${session.expiresAt}');
-      debugPrint('Supabase access token: ${session.accessToken}');
     }
   });
 
@@ -28,15 +27,11 @@ void main() async {
     try {
       await Supabase.instance.client.auth.signInAnonymously();
       debugPrint('Anonymous sign-in successful');
-      debugPrint(
-        'Supabase access token: ${Supabase.instance.client.auth.currentSession?.accessToken}',
-      );
     } catch (e) {
       debugPrint('Anonymous sign-in failed: $e');
     }
   } else {
     debugPrint('Existing session found for user: ${session.user.id}');
-    debugPrint('Supabase access token: ${session.accessToken}');
   }
 
   try {

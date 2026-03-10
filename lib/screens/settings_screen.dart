@@ -45,12 +45,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
         const Divider(),
         ListTile(
-          leading: const Icon(Icons.key),
-          title: const Text('OpenAI API Key'),
-          subtitle: const Text('Configured locally'),
-        ),
-        const Divider(),
-        ListTile(
           leading: const Icon(Icons.info_outline),
           title: const Text('About'),
           subtitle: const Text('Math Copilot AI v1.0.0'),
