@@ -6,6 +6,7 @@ import { aiRouter } from "./routes/ai";
 const app = express();
 const port = Number(process.env.PORT) || 3000;
 const nodeEnv = process.env.NODE_ENV ?? "development";
+const publicBaseUrl = process.env.PUBLIC_BASE_URL ?? "";
 const allowedOrigins = (process.env.CORS_ALLOWED_ORIGINS ?? "")
   .split(",")
   .map((origin) => origin.trim())
@@ -59,5 +60,21 @@ app.use((err: unknown, _req: express.Request, res: express.Response, _next: expr
 });
 
 app.listen(port, () => {
-  console.log(`Server listening on http://localhost:${port} (env: ${nodeEnv})`);
+  const trimmedPublicBaseUrl = publicBaseUrl.trim();
+  const localBaseUrl = `http://localhost:${port}`;
+  const isProduction = nodeEnv === "production";
+  const effectiveBaseUrl =
+    isProduction && trimmedPublicBaseUrl.length > 0
+      ? trimmedPublicBaseUrl
+      : localBaseUrl;
+
+  if (isProduction && trimmedPublicBaseUrl.length === 0) {
+    console.warn(
+      "NODE_ENV is production but PUBLIC_BASE_URL is not set. Falling back to localhost in logs.",
+    );
+  }
+
+  console.log(
+    `Server started on port ${port} (env: ${nodeEnv}, baseUrl: ${effectiveBaseUrl})`,
+  );
 });
