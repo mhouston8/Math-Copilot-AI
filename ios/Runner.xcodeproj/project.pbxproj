@@ -477,7 +477,7 @@
 				DEVELOPMENT_TEAM = P7VQ69R986;
 				ENABLE_BITCODE = NO;
 				INFOPLIST_FILE = Runner/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = "Math Copliot AI";
+				INFOPLIST_KEY_CFBundleDisplayName = "Math Copilot AI";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.education";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
