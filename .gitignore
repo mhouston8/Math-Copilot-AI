@@ -25,6 +25,7 @@ migrate_working_dir/
 
 # API keys / secrets
 lib/config.dart
+android/key.properties
 
 # Flutter/Dart/Pub related
 **/doc/api/
