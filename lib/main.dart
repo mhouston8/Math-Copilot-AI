@@ -32,6 +32,12 @@ void main() async {
     }
   } else {
     debugPrint('Existing session found for user: ${session.user.id}');
+    try {
+      await Supabase.instance.client.auth.refreshSession();
+      debugPrint('Requested Supabase token refresh');
+    } catch (e) {
+      debugPrint('Supabase token refresh failed: $e');
+    }
   }
 
   try {
@@ -69,8 +75,8 @@ class _MyAppState extends State<MyApp> {
   }
 
   Future<void> _loadStartupState() async {
-    final isOnboardingComplete =
-        await _sharedPreferencesService.isOnboardingComplete();
+    final isOnboardingComplete = await _sharedPreferencesService
+        .isOnboardingComplete();
 
     if (!mounted) return;
     setState(() {
@@ -113,9 +119,7 @@ class _MyAppState extends State<MyApp> {
   Widget build(BuildContext context) {
     final Widget home;
     if (_isStartupLoading) {
-      home = const Scaffold(
-        body: Center(child: CircularProgressIndicator()),
-      );
+      home = const Scaffold(body: Center(child: CircularProgressIndicator()));
     } else if (!_isOnboardingComplete) {
       home = OnboardingScreen(onFinished: _handleOnboardingFinished);
     } else {
