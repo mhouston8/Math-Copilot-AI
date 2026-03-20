@@ -17,11 +17,6 @@ class _TabShellState extends State<TabShell> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Math Copilot AI'),
-        centerTitle: true,
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-      ),
       body: IndexedStack(
         index: _currentIndex,
         children: [

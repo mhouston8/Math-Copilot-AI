@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
@@ -15,6 +16,10 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  static const Color _indigo = Color(0xFF4F46E5);
+  static const Color _orchid = Color(0xFFB832D9);
+  static const Color _cyan = Color(0xFF06B6D4);
+
   Future<void> _scanProblem() async {
     final picker = ImagePicker();
     final XFile? photo = await picker.pickImage(source: ImageSource.camera);
@@ -31,48 +36,151 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isIOS = Theme.of(context).platform == TargetPlatform.iOS;
+    if (isIOS) {
+      return CustomScrollView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        slivers: [
+          const CupertinoSliverNavigationBar(
+            largeTitle: Text('Home'),
+          ),
+          SliverPadding(
+            padding: const EdgeInsets.fromLTRB(16, 10, 16, 24),
+            sliver: SliverList(
+              delegate: SliverChildListDelegate([
+                _buildScanBanner(context),
+                const SizedBox(height: 20),
+                _buildLearningToolsSection(context),
+                _buildQuickAccessSection(context),
+              ]),
+            ),
+          ),
+        ],
+      );
+    }
+
     return ListView(
       physics: const AlwaysScrollableScrollPhysics(),
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.fromLTRB(16, 10, 16, 24),
       children: [
+        _buildWelcomeHeader(context),
+        const SizedBox(height: 12),
         _buildScanBanner(context),
-        const SizedBox(height: 16),
+        const SizedBox(height: 20),
         _buildLearningToolsSection(context),
         _buildQuickAccessSection(context),
       ],
     );
   }
 
-  Widget _buildScanBanner(BuildContext context) {
+  Widget _buildWelcomeHeader(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Let\'s make math click.',
+          style: TextStyle(
+            fontSize: 28,
+            fontWeight: FontWeight.w800,
+            letterSpacing: -0.4,
+            color: colorScheme.onSurface,
+          ),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          'Pick a tool and start learning with guided practice.',
+          style: TextStyle(
+            fontSize: 15,
+            fontWeight: FontWeight.w500,
+            color: colorScheme.onSurfaceVariant,
+          ),
+        ),
+      ],
+    );
+  }
 
+  Widget _buildScanBanner(BuildContext context) {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: colorScheme.primaryContainer,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(22),
+        gradient: const LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [_indigo, _orchid],
+        ),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x3A4F46E5),
+            blurRadius: 20,
+            offset: Offset(0, 10),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.2),
+                  borderRadius: BorderRadius.circular(999),
+                ),
+                child: const Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.bolt_rounded, size: 14, color: Colors.white),
+                    SizedBox(width: 6),
+                    Text(
+                      'MOST POPULAR',
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: 0.3,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
           Text(
-            'Scan your math problem and get instant solutions with step-by-step explanations.',
+            'Snap a problem,\nget a step-by-step explanation.',
+            style: const TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.w800,
+              height: 1.15,
+              letterSpacing: -0.35,
+              color: Colors.white,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Use your camera to solve homework faster and understand each step.',
             style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w600,
+              fontSize: 14,
+              fontWeight: FontWeight.w500,
               height: 1.35,
-              color: colorScheme.onPrimaryContainer,
+              color: Colors.white.withValues(alpha: 0.93),
             ),
           ),
           const SizedBox(height: 14),
-          FilledButton.icon(
+          ElevatedButton.icon(
             onPressed: _scanProblem,
             icon: const Icon(Icons.document_scanner_outlined),
             label: const Text('Scan Problem'),
-            style: FilledButton.styleFrom(
+            style: ElevatedButton.styleFrom(
               minimumSize: const Size(double.infinity, 48),
-              backgroundColor: colorScheme.primary,
-              foregroundColor: colorScheme.onPrimary,
+              backgroundColor: Colors.white,
+              foregroundColor: _indigo,
+              textStyle: const TextStyle(
+                fontWeight: FontWeight.w800,
+              ),
             ),
           ),
         ],
@@ -218,13 +326,9 @@ class _HomeScreenState extends State<HomeScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          'Learning Tools',
-          style: TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
-            color: Theme.of(context).colorScheme.onSurface,
-          ),
+        _SectionHeader(
+          title: 'Learning Tools',
+          subtitle: 'Build skills with guided practice',
         ),
         const SizedBox(height: 12),
         Wrap(
@@ -237,6 +341,9 @@ class _HomeScreenState extends State<HomeScreen> {
               label: 'Quizzes',
               subtitle: 'Test your math skills',
               onTap: () => _showSubjectPicker(context),
+              iconColor: _indigo,
+              iconBackgroundColor: const Color(0xFFE6E8FF),
+              cardBackgroundColor: const Color(0xFFF4F6FF),
             ),
             _LearningToolCard(
               width: cardWidth,
@@ -244,6 +351,9 @@ class _HomeScreenState extends State<HomeScreen> {
               label: 'Cheat Sheets',
               subtitle: 'Quick formulas and rules',
               onTap: _openCheatSheets,
+              iconColor: const Color(0xFF087E8B),
+              iconBackgroundColor: const Color(0xFFDDF9FC),
+              cardBackgroundColor: const Color(0xFFF0FCFE),
             ),
           ],
         ),
@@ -261,13 +371,9 @@ class _HomeScreenState extends State<HomeScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          'Quick Access',
-          style: TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
-            color: Theme.of(context).colorScheme.onSurface,
-          ),
+        _SectionHeader(
+          title: 'Quick Access',
+          subtitle: 'Jump straight into support tools',
         ),
         const SizedBox(height: 12),
         Wrap(
@@ -280,6 +386,9 @@ class _HomeScreenState extends State<HomeScreen> {
               label: 'Tutor Chat',
               subtitle: 'Ask Math Questions',
               onTap: _openTutorChat,
+              iconColor: _orchid,
+              iconBackgroundColor: const Color(0xFFF9E1FF),
+              cardBackgroundColor: const Color(0xFFFEF5FF),
             ),
             _LearningToolCard(
               width: cardWidth,
@@ -287,6 +396,9 @@ class _HomeScreenState extends State<HomeScreen> {
               label: 'Calculator',
               subtitle: 'Quick basic calculations',
               onTap: _openCalculator,
+              iconColor: _cyan,
+              iconBackgroundColor: const Color(0xFFDDF9FF),
+              cardBackgroundColor: const Color(0xFFEFFBFF),
             ),
           ],
         ),
@@ -304,6 +416,9 @@ class _LearningToolCard extends StatelessWidget {
     required this.label,
     this.subtitle,
     required this.onTap,
+    required this.iconColor,
+    required this.iconBackgroundColor,
+    required this.cardBackgroundColor,
   });
 
   final double width;
@@ -311,52 +426,108 @@ class _LearningToolCard extends StatelessWidget {
   final String label;
   final String? subtitle;
   final VoidCallback onTap;
+  final Color iconColor;
+  final Color iconBackgroundColor;
+  final Color cardBackgroundColor;
 
   @override
   Widget build(BuildContext context) {
     return SizedBox(
       width: width,
-      height: 120,
+      height: 140,
       child: Card(
         clipBehavior: Clip.antiAlias,
+        elevation: 0,
+        color: cardBackgroundColor,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(18),
+          side: BorderSide(
+            color: Colors.black.withValues(alpha: 0.04),
+          ),
+        ),
         child: InkWell(
           onTap: onTap,
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(
-                icon,
-                size: 32,
-                color: Theme.of(context).colorScheme.primary,
-              ),
-              const SizedBox(height: 8),
-              Text(
-                label,
-                style: const TextStyle(
-                  fontSize: 15,
-                  fontWeight: FontWeight.w600,
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(14, 14, 14, 10),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: iconBackgroundColor,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Icon(icon, size: 22, color: iconColor),
                 ),
-              ),
-              if (subtitle != null) ...[
-                const SizedBox(height: 4),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 12),
-                  child: Text(
+                const SizedBox(height: 10),
+                Text(
+                  label,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: -0.1,
+                  ),
+                ),
+                if (subtitle != null) ...[
+                  const SizedBox(height: 2),
+                  Text(
                     subtitle!,
-                    textAlign: TextAlign.center,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
-                      fontSize: 12,
+                      fontSize: 12.5,
+                      height: 1.3,
+                      fontWeight: FontWeight.w500,
                       color: Theme.of(context).colorScheme.onSurfaceVariant,
                     ),
                   ),
-                ),
+                ],
               ],
-            ],
+            ),
           ),
         ),
       ),
+    );
+  }
+}
+
+class _SectionHeader extends StatelessWidget {
+  const _SectionHeader({
+    required this.title,
+    required this.subtitle,
+  });
+
+  final String title;
+  final String subtitle;
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          title,
+          style: TextStyle(
+            fontSize: 22,
+            fontWeight: FontWeight.w800,
+            letterSpacing: -0.3,
+            color: colorScheme.onSurface,
+          ),
+        ),
+        const SizedBox(height: 2),
+        Text(
+          subtitle,
+          style: TextStyle(
+            fontSize: 13,
+            fontWeight: FontWeight.w500,
+            color: colorScheme.onSurfaceVariant,
+          ),
+        ),
+      ],
     );
   }
 }
