@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import '../models/quiz_question.dart';
@@ -13,6 +14,8 @@ class QuizScreen extends StatefulWidget {
 }
 
 class _QuizScreenState extends State<QuizScreen> {
+  static const Color _brandIndigo = Color(0xFF4F46E5);
+
   final OpenAIService _openAIService = OpenAIService();
 
   List<QuizQuestion> _questions = [];
@@ -21,6 +24,8 @@ class _QuizScreenState extends State<QuizScreen> {
   int? _selectedIndex;
   bool _isLoading = true;
   String? _error;
+
+  String get _titleText => '${widget.subject} Quiz';
 
   @override
   void initState() {
@@ -51,7 +56,8 @@ class _QuizScreenState extends State<QuizScreen> {
       if (mounted) {
         setState(() {
           _isLoading = false;
-          _error = 'Could not generate quiz. Please check your connection and try again.';
+          _error =
+              'Could not generate quiz. Please check your connection and try again.';
         });
       }
     }
@@ -83,63 +89,142 @@ class _QuizScreenState extends State<QuizScreen> {
     });
   }
 
-  bool get _isFinished => _questions.isNotEmpty && _currentIndex >= _questions.length;
+  bool get _isFinished =>
+      _questions.isNotEmpty && _currentIndex >= _questions.length;
+
+  bool get _questionNeedsScroll =>
+      !_isLoading && _error == null && !_isFinished;
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('${widget.subject} Quiz'),
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-      ),
-      body: _isLoading
-          ? _buildLoadingState()
-          : _error != null
-              ? _buildErrorState()
-              : _isFinished
-                  ? _buildResultsState(context)
-                  : _buildQuestionState(context),
-    );
-  }
+    final isIOS = Theme.of(context).platform == TargetPlatform.iOS;
+    final colorScheme = Theme.of(context).colorScheme;
 
-  Widget _buildLoadingState() {
-    return const Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
+    if (isIOS) {
+      return CupertinoTheme(
+        data: CupertinoTheme.of(context).copyWith(primaryColor: _brandIndigo),
+        child: Scaffold(
+          backgroundColor: colorScheme.surface,
+          body: CustomScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            slivers: [
+              CupertinoSliverNavigationBar(
+                heroTag: 'quiz-large-title-nav-bar',
+                largeTitle: Text(_titleText),
+              ),
+              SliverFillRemaining(
+                hasScrollBody: _questionNeedsScroll,
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+                  child: _buildMainContent(context),
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    return Scaffold(
+      backgroundColor: colorScheme.surface,
+      body: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          CircularProgressIndicator(),
-          SizedBox(height: 24),
-          Text(
-            'Generating questions...',
-            style: TextStyle(fontSize: 16),
+          SafeArea(
+            bottom: false,
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(4, 4, 16, 8),
+              child: Row(
+                children: [
+                  IconButton(
+                    onPressed: () => Navigator.of(context).maybePop(),
+                    icon: const Icon(Icons.arrow_back_ios_new_rounded),
+                    color: _brandIndigo,
+                    tooltip: 'Back',
+                  ),
+                  Expanded(
+                    child: Text(
+                      _titleText,
+                      style: TextStyle(
+                        fontSize: 28,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: -0.4,
+                        color: colorScheme.onSurface,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+              child: _buildMainContent(context),
+            ),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildErrorState() {
+  Widget _buildMainContent(BuildContext context) {
+    if (_isLoading) return _buildLoadingState(context);
+    if (_error != null) return _buildErrorState(context);
+    if (_isFinished) return _buildResultsState(context);
+    return _buildQuestionState(context);
+  }
+
+  Widget _buildLoadingState(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(32),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.error_outline, size: 80, color: Colors.grey[400]),
-            const SizedBox(height: 16),
-            Text(
-              _error!,
-              textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 16, color: Colors.grey[600]),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const CircularProgressIndicator(),
+          const SizedBox(height: 20),
+          Text(
+            'Generating questions…',
+            style: TextStyle(
+              fontSize: 15,
+              fontWeight: FontWeight.w500,
+              color: colorScheme.onSurfaceVariant,
             ),
-            const SizedBox(height: 24),
-            FilledButton.icon(
-              onPressed: _generateQuiz,
-              icon: const Icon(Icons.refresh),
-              label: const Text('Try Again'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildErrorState(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            Icons.error_outline_rounded,
+            size: 72,
+            color: colorScheme.error.withValues(alpha: 0.85),
+          ),
+          const SizedBox(height: 16),
+          Text(
+            _error!,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: 15,
+              height: 1.4,
+              fontWeight: FontWeight.w500,
+              color: colorScheme.onSurfaceVariant,
             ),
-          ],
-        ),
+          ),
+          const SizedBox(height: 28),
+          _QuizGradientButton(
+            label: 'Try Again',
+            icon: Icons.refresh_rounded,
+            onTap: _generateQuiz,
+          ),
+        ],
       ),
     );
   }
@@ -150,73 +235,88 @@ class _QuizScreenState extends State<QuizScreen> {
     final answeredCount = _currentIndex + (_selectedIndex != null ? 1 : 0);
     final incorrectCount = answeredCount - _score;
 
-    return Padding(
-      padding: const EdgeInsets.all(24),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Text(
-            'Question ${_currentIndex + 1} of ${_questions.length}',
-            style: TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.w500,
-              color: colorScheme.primary,
-            ),
+    final column = Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Text(
+          'Question ${_currentIndex + 1} of ${_questions.length}',
+          style: TextStyle(
+            fontSize: 13,
+            fontWeight: FontWeight.w600,
+            color: _brandIndigo,
+            letterSpacing: -0.05,
           ),
-          const SizedBox(height: 8),
-          LinearProgressIndicator(
+        ),
+        const SizedBox(height: 8),
+        ClipRRect(
+          borderRadius: BorderRadius.circular(6),
+          child: LinearProgressIndicator(
             value: (_currentIndex + 1) / _questions.length,
-            borderRadius: BorderRadius.circular(4),
+            minHeight: 6,
+            backgroundColor:
+                colorScheme.surfaceContainerHighest.withValues(alpha: 0.8),
+            color: _brandIndigo,
           ),
-          const SizedBox(height: 32),
-          Text(
-            question.question,
-            style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
+        ),
+        const SizedBox(height: 24),
+        Text(
+          question.question,
+          style: TextStyle(
+            fontSize: 22,
+            fontWeight: FontWeight.w800,
+            letterSpacing: -0.3,
+            height: 1.25,
+            color: colorScheme.onSurface,
           ),
-          const SizedBox(height: 32),
-          for (int i = 0; i < question.options.length; i++) ...[
-            _AnswerButton(
-              label: String.fromCharCode(65 + i),
-              text: question.options[i],
-              state: _getAnswerState(i),
-              onTap: () => _selectAnswer(i),
-            ),
-            if (i < question.options.length - 1) const SizedBox(height: 12),
-          ],
-          const Spacer(),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              _StatChip(
-                label: 'Correct',
-                value: _score,
-                backgroundColor: Colors.green.shade50,
-                textColor: Colors.green.shade800,
-                borderColor: Colors.green.shade200,
-              ),
-              const SizedBox(width: 10),
-              _StatChip(
-                label: 'Incorrect',
-                value: incorrectCount,
-                backgroundColor: Colors.red.shade50,
-                textColor: Colors.red.shade800,
-                borderColor: Colors.red.shade200,
-              ),
-            ],
+        ),
+        const SizedBox(height: 24),
+        for (int i = 0; i < question.options.length; i++) ...[
+          _AnswerButton(
+            label: String.fromCharCode(65 + i),
+            text: question.options[i],
+            state: _getAnswerState(i),
+            onTap: () => _selectAnswer(i),
           ),
+          if (i < question.options.length - 1) const SizedBox(height: 12),
         ],
-      ),
+        const SizedBox(height: 24),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            _StatChip(
+              label: 'Correct',
+              value: _score,
+              backgroundColor: const Color(0xFFECFDF5),
+              textColor: const Color(0xFF065F46),
+              borderColor: const Color(0xFFA7F3D0),
+            ),
+            const SizedBox(width: 10),
+            _StatChip(
+              label: 'Incorrect',
+              value: incorrectCount,
+              backgroundColor: const Color(0xFFFEF2F2),
+              textColor: const Color(0xFF991B1B),
+              borderColor: const Color(0xFFFECACA),
+            ),
+          ],
+        ),
+      ],
     );
+
+    return SingleChildScrollView(child: column);
   }
 
   _AnswerState _getAnswerState(int index) {
     if (_selectedIndex == null) return _AnswerState.neutral;
-    if (index == _questions[_currentIndex].correctIndex) return _AnswerState.correct;
+    if (index == _questions[_currentIndex].correctIndex) {
+      return _AnswerState.correct;
+    }
     if (index == _selectedIndex) return _AnswerState.wrong;
     return _AnswerState.dimmed;
   }
 
   Widget _buildResultsState(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     final percentage = (_score / _questions.length * 100).round();
     final message = percentage >= 80
         ? 'Excellent work!'
@@ -225,53 +325,74 @@ class _QuizScreenState extends State<QuizScreen> {
             : 'Keep practicing!';
 
     return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(32),
+      child: SingleChildScrollView(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(
-              percentage >= 60 ? Icons.emoji_events : Icons.school,
-              size: 80,
-              color: Theme.of(context).colorScheme.primary,
+              percentage >= 60 ? Icons.emoji_events_rounded : Icons.school_rounded,
+              size: 72,
+              color: _brandIndigo,
             ),
-            const SizedBox(height: 24),
-            const Text(
-              'Quiz Complete!',
-              style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
+            const SizedBox(height: 20),
+            Text(
+              'Quiz complete',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 28,
+                fontWeight: FontWeight.w800,
+                letterSpacing: -0.4,
+                color: colorScheme.onSurface,
+              ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 12),
             Text(
               '$_score / ${_questions.length}',
               style: TextStyle(
-                fontSize: 48,
-                fontWeight: FontWeight.bold,
-                color: Theme.of(context).colorScheme.primary,
+                fontSize: 44,
+                fontWeight: FontWeight.w800,
+                letterSpacing: -0.5,
+                color: _brandIndigo,
               ),
             ),
             const SizedBox(height: 8),
             Text(
               message,
-              style: TextStyle(fontSize: 18, color: Colors.grey[600]),
-            ),
-            const SizedBox(height: 48),
-            FilledButton.icon(
-              onPressed: _generateQuiz,
-              icon: const Icon(Icons.refresh),
-              label: const Text('Try Again'),
-              style: FilledButton.styleFrom(
-                minimumSize: const Size(double.infinity, 56),
-                textStyle: const TextStyle(fontSize: 18),
+              style: TextStyle(
+                fontSize: 15,
+                fontWeight: FontWeight.w500,
+                color: colorScheme.onSurfaceVariant,
               ),
             ),
+            const SizedBox(height: 36),
+            _QuizGradientButton(
+              label: 'Try Again',
+              icon: Icons.refresh_rounded,
+              onTap: _generateQuiz,
+            ),
             const SizedBox(height: 12),
-            OutlinedButton.icon(
-              onPressed: () => Navigator.pop(context),
-              icon: const Icon(Icons.arrow_back),
-              label: const Text('Back to Home'),
-              style: OutlinedButton.styleFrom(
-                minimumSize: const Size(double.infinity, 56),
-                textStyle: const TextStyle(fontSize: 18),
+            SizedBox(
+              width: double.infinity,
+              height: 52,
+              child: OutlinedButton.icon(
+                onPressed: () => Navigator.pop(context),
+                icon: Icon(Icons.arrow_back_rounded, color: _brandIndigo),
+                label: Text(
+                  'Back to Home',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
+                    color: _brandIndigo,
+                  ),
+                ),
+                style: OutlinedButton.styleFrom(
+                  side: BorderSide(
+                    color: colorScheme.outlineVariant.withValues(alpha: 0.6),
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                ),
               ),
             ),
           ],
@@ -296,6 +417,9 @@ class _AnswerButton extends StatelessWidget {
   final _AnswerState state;
   final VoidCallback onTap;
 
+  static const Color _brandIndigo = Color(0xFF4F46E5);
+  static const Color _letterBg = Color(0xFFE6E8FF);
+
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
@@ -307,69 +431,79 @@ class _AnswerButton extends StatelessWidget {
     switch (state) {
       case _AnswerState.neutral:
         backgroundColor = colorScheme.surface;
-        borderColor = colorScheme.outline;
+        borderColor = colorScheme.outlineVariant.withValues(alpha: 0.65);
         textColor = colorScheme.onSurface;
       case _AnswerState.correct:
-        backgroundColor = Colors.green.shade50;
-        borderColor = Colors.green;
-        textColor = Colors.green.shade900;
+        backgroundColor = const Color(0xFFECFDF5);
+        borderColor = const Color(0xFF10B981);
+        textColor = const Color(0xFF065F46);
       case _AnswerState.wrong:
-        backgroundColor = Colors.red.shade50;
-        borderColor = Colors.red;
-        textColor = Colors.red.shade900;
+        backgroundColor = const Color(0xFFFEF2F2);
+        borderColor = const Color(0xFFEF4444);
+        textColor = const Color(0xFF991B1B);
       case _AnswerState.dimmed:
         backgroundColor = colorScheme.surface;
-        borderColor = colorScheme.outline.withValues(alpha: 0.3);
-        textColor = colorScheme.onSurface.withValues(alpha: 0.4);
+        borderColor = colorScheme.outlineVariant.withValues(alpha: 0.25);
+        textColor = colorScheme.onSurface.withValues(alpha: 0.38);
     }
 
     return Material(
       color: backgroundColor,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-        side: BorderSide(color: borderColor, width: 2),
+        borderRadius: BorderRadius.circular(16),
+        side: BorderSide(color: borderColor, width: 1.5),
       ),
       child: InkWell(
         onTap: state == _AnswerState.neutral ? onTap : null,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(16),
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
           child: Row(
             children: [
               Container(
-                width: 32,
-                height: 32,
+                width: 36,
+                height: 36,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   color: state == _AnswerState.correct
-                      ? Colors.green
+                      ? const Color(0xFF10B981)
                       : state == _AnswerState.wrong
-                          ? Colors.red
-                          : colorScheme.primaryContainer,
+                          ? const Color(0xFFEF4444)
+                          : _letterBg,
                 ),
                 child: Center(
                   child: Text(
                     label,
                     style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      color: state == _AnswerState.correct || state == _AnswerState.wrong
+                      fontWeight: FontWeight.w800,
+                      fontSize: 15,
+                      color: state == _AnswerState.correct ||
+                              state == _AnswerState.wrong
                           ? Colors.white
-                          : colorScheme.onPrimaryContainer,
+                          : _brandIndigo,
                     ),
                   ),
                 ),
               ),
-              const SizedBox(width: 16),
+              const SizedBox(width: 14),
               Expanded(
                 child: Text(
                   text,
-                  style: TextStyle(fontSize: 16, color: textColor),
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    height: 1.25,
+                    letterSpacing: -0.1,
+                    color: textColor,
+                  ),
                 ),
               ),
               if (state == _AnswerState.correct)
-                const Icon(Icons.check_circle, color: Colors.green),
+                const Icon(Icons.check_circle_rounded,
+                    color: Color(0xFF10B981), size: 24),
               if (state == _AnswerState.wrong)
-                const Icon(Icons.cancel, color: Colors.red),
+                const Icon(Icons.cancel_rounded,
+                    color: Color(0xFFEF4444), size: 24),
             ],
           ),
         ),
@@ -396,7 +530,7 @@ class _StatChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
       decoration: BoxDecoration(
         color: backgroundColor,
         borderRadius: BorderRadius.circular(999),
@@ -407,7 +541,69 @@ class _StatChip extends StatelessWidget {
         style: TextStyle(
           color: textColor,
           fontSize: 13,
-          fontWeight: FontWeight.w600,
+          fontWeight: FontWeight.w700,
+          letterSpacing: -0.05,
+        ),
+      ),
+    );
+  }
+}
+
+class _QuizGradientButton extends StatelessWidget {
+  const _QuizGradientButton({
+    required this.label,
+    required this.icon,
+    required this.onTap,
+  });
+
+  final String label;
+  final IconData icon;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: double.infinity,
+      height: 56,
+      child: Material(
+        color: Colors.transparent,
+        borderRadius: BorderRadius.circular(16),
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(16),
+          child: Ink(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(16),
+              gradient: const LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [Color(0xFFC83BFF), Color(0xFF3F8CFF)],
+              ),
+              boxShadow: const [
+                BoxShadow(
+                  color: Color(0x663F8CFF),
+                  blurRadius: 18,
+                  offset: Offset(0, 8),
+                ),
+              ],
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(icon, color: Colors.white, size: 22),
+                const SizedBox(width: 8),
+                Text(
+                  label,
+                  style: const TextStyle(
+                    fontSize: 17,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: -0.1,
+                    color: Colors.white,
+                  ),
+                ),
+              ],
+            ),
+          ),
         ),
       ),
     );
