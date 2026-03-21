@@ -137,7 +137,7 @@ class _ResultScreenState extends State<ResultScreen>
                 CircularProgressIndicator(),
                 SizedBox(height: 16),
                 Text(
-                  'Analyzing your homework...',
+                  'Analyzing your math problem...',
                   style: TextStyle(fontSize: 16),
                 ),
               ],
