@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 class CalculatorScreen extends StatefulWidget {
@@ -8,6 +9,8 @@ class CalculatorScreen extends StatefulWidget {
 }
 
 class _CalculatorScreenState extends State<CalculatorScreen> {
+  static const Color _brandIndigo = Color(0xFF4F46E5);
+
   String _display = '0';
   double? _firstOperand;
   String? _operator;
@@ -113,7 +116,9 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
 
   void _onEqualsTap() {
     final currentValue = double.tryParse(_display);
-    if (currentValue == null || _firstOperand == null || _operator == null) return;
+    if (currentValue == null || _firstOperand == null || _operator == null) {
+      return;
+    }
 
     final result = _calculate(_firstOperand!, currentValue, _operator!);
 
@@ -152,42 +157,44 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
         .replaceAll('-0', '0');
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Calculator'),
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+  Widget _buildDisplay(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final isError = _display == 'Error';
+
+    return Container(
+      width: double.infinity,
+      alignment: Alignment.bottomRight,
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+      decoration: BoxDecoration(
+        color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.45),
+        borderRadius: BorderRadius.circular(22),
+        border: Border.all(
+          color: colorScheme.outlineVariant.withValues(alpha: 0.4),
+        ),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x0A000000),
+            blurRadius: 12,
+            offset: Offset(0, 4),
+          ),
+        ],
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          children: [
-            Expanded(
-              child: Container(
-                width: double.infinity,
-                alignment: Alignment.bottomRight,
-                padding: const EdgeInsets.all(16),
-                child: Text(
-                  _display,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    fontSize: 48,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ),
-            ),
-            const SizedBox(height: 8),
-            _buildKeyboard(),
-          ],
+      child: Text(
+        _display,
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+        style: TextStyle(
+          fontSize: 42,
+          fontWeight: FontWeight.w700,
+          letterSpacing: -0.6,
+          height: 1.1,
+          color: isError ? colorScheme.error : colorScheme.onSurface,
         ),
       ),
     );
   }
 
-  Widget _buildKeyboard() {
+  Widget _buildKeyboard(BuildContext context) {
     return Column(
       children: [
         Row(
@@ -253,6 +260,83 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
       ],
     );
   }
+
+  @override
+  Widget build(BuildContext context) {
+    final isIOS = Theme.of(context).platform == TargetPlatform.iOS;
+    final colorScheme = Theme.of(context).colorScheme;
+    final bottomPad = MediaQuery.paddingOf(context).bottom;
+
+    final content = Padding(
+      padding: EdgeInsets.fromLTRB(16, 8, 16, 8 + bottomPad),
+      child: Column(
+        children: [
+          Expanded(child: _buildDisplay(context)),
+          const SizedBox(height: 12),
+          _buildKeyboard(context),
+        ],
+      ),
+    );
+
+    if (isIOS) {
+      return CupertinoTheme(
+        data: CupertinoTheme.of(context).copyWith(primaryColor: _brandIndigo),
+        child: Scaffold(
+          backgroundColor: colorScheme.surface,
+          body: CustomScrollView(
+            physics: const ClampingScrollPhysics(),
+            slivers: [
+              const CupertinoSliverNavigationBar(
+                heroTag: 'calculator-large-title-nav-bar',
+                largeTitle: Text('Calculator'),
+              ),
+              SliverFillRemaining(
+                hasScrollBody: false,
+                child: content,
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    return Scaffold(
+      backgroundColor: colorScheme.surface,
+      body: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          SafeArea(
+            bottom: false,
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(4, 4, 16, 8),
+              child: Row(
+                children: [
+                  IconButton(
+                    onPressed: () => Navigator.of(context).maybePop(),
+                    icon: const Icon(Icons.arrow_back_ios_new_rounded),
+                    color: _brandIndigo,
+                    tooltip: 'Back',
+                  ),
+                  Expanded(
+                    child: Text(
+                      'Calculator',
+                      style: TextStyle(
+                        fontSize: 28,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: -0.4,
+                        color: colorScheme.onSurface,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          Expanded(child: content),
+        ],
+      ),
+    );
+  }
 }
 
 class _CalcButton extends StatelessWidget {
@@ -268,22 +352,88 @@ class _CalcButton extends StatelessWidget {
   final bool isOperator;
   final bool isFunction;
 
+  static const List<Color> _gradient = [
+    Color(0xFFC83BFF),
+    Color(0xFF3F8CFF),
+  ];
+
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
 
-    Color background;
-    Color foreground;
-
     if (isOperator) {
-      background = colorScheme.primary;
-      foreground = colorScheme.onPrimary;
-    } else if (isFunction) {
-      background = colorScheme.surfaceContainerHighest;
-      foreground = colorScheme.onSurface;
-    } else {
-      background = colorScheme.surface;
-      foreground = colorScheme.onSurface;
+      return Expanded(
+        child: Padding(
+          padding: const EdgeInsets.all(4),
+          child: SizedBox(
+            height: 68,
+            child: Material(
+              color: Colors.transparent,
+              borderRadius: BorderRadius.circular(16),
+              child: InkWell(
+                onTap: onTap,
+                borderRadius: BorderRadius.circular(16),
+                child: Ink(
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(16),
+                    gradient: const LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: _gradient,
+                    ),
+                    boxShadow: const [
+                      BoxShadow(
+                        color: Color(0x553F8CFF),
+                        blurRadius: 10,
+                        offset: Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: Center(
+                    child: Text(
+                      text,
+                      style: const TextStyle(
+                        fontSize: 26,
+                        fontWeight: FontWeight.w700,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+
+    if (isFunction) {
+      return Expanded(
+        child: Padding(
+          padding: const EdgeInsets.all(4),
+          child: SizedBox(
+            height: 68,
+            child: Material(
+              color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.55),
+              borderRadius: BorderRadius.circular(16),
+              child: InkWell(
+                onTap: onTap,
+                borderRadius: BorderRadius.circular(16),
+                child: Center(
+                  child: Text(
+                    text,
+                    style: TextStyle(
+                      fontSize: text == '⌫' ? 22 : 20,
+                      fontWeight: FontWeight.w600,
+                      color: colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
     }
 
     return Expanded(
@@ -291,20 +441,31 @@ class _CalcButton extends StatelessWidget {
         padding: const EdgeInsets.all(4),
         child: SizedBox(
           height: 68,
-          child: FilledButton(
-            onPressed: onTap,
-            style: FilledButton.styleFrom(
-              backgroundColor: background,
-              foregroundColor: foreground,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
-              ),
-            ),
-            child: Text(
-              text,
-              style: const TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.w600,
+          child: Material(
+            color: colorScheme.surface,
+            borderRadius: BorderRadius.circular(16),
+            elevation: 0,
+            child: InkWell(
+              onTap: onTap,
+              borderRadius: BorderRadius.circular(16),
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(
+                    color: colorScheme.outlineVariant.withValues(alpha: 0.55),
+                  ),
+                ),
+                child: Center(
+                  child: Text(
+                    text,
+                    style: TextStyle(
+                      fontSize: 26,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: -0.3,
+                      color: colorScheme.onSurface,
+                    ),
+                  ),
+                ),
               ),
             ),
           ),
