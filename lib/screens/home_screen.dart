@@ -19,6 +19,15 @@ class _HomeScreenState extends State<HomeScreen> {
   static const Color _indigo = Color(0xFF4F46E5);
   static const Color _orchid = Color(0xFFB832D9);
   static const Color _cyan = Color(0xFF06B6D4);
+  static const List<String> _categories = [
+    'All',
+    'Scan',
+    'Practice',
+    'Reference',
+    'Support',
+  ];
+
+  String _selectedCategory = 'All';
 
   Future<void> _scanProblem() async {
     final picker = ImagePicker();
@@ -48,8 +57,12 @@ class _HomeScreenState extends State<HomeScreen> {
             padding: const EdgeInsets.fromLTRB(16, 10, 16, 24),
             sliver: SliverList(
               delegate: SliverChildListDelegate([
-                _buildScanBanner(context),
-                const SizedBox(height: 20),
+                _buildCategoryPills(),
+                const SizedBox(height: 16),
+                if (_shouldShowScanBanner()) ...[
+                  _buildScanBanner(context),
+                  const SizedBox(height: 20),
+                ],
                 _buildLearningToolsSection(context),
                 _buildQuickAccessSection(context),
               ]),
@@ -70,11 +83,56 @@ class _HomeScreenState extends State<HomeScreen> {
         children: [
           _buildWelcomeHeader(context),
           const SizedBox(height: 12),
-          _buildScanBanner(context),
-          const SizedBox(height: 20),
+          _buildCategoryPills(),
+          const SizedBox(height: 16),
+          if (_shouldShowScanBanner()) ...[
+            _buildScanBanner(context),
+            const SizedBox(height: 20),
+          ],
           _buildLearningToolsSection(context),
           _buildQuickAccessSection(context),
         ],
+      ),
+    );
+  }
+
+  bool _shouldShowScanBanner() {
+    return _selectedCategory == 'All' || _selectedCategory == 'Scan';
+  }
+
+  bool _shouldShowPractice() {
+    return _selectedCategory == 'All' || _selectedCategory == 'Practice';
+  }
+
+  bool _shouldShowReference() {
+    return _selectedCategory == 'All' || _selectedCategory == 'Reference';
+  }
+
+  bool _shouldShowSupport() {
+    return _selectedCategory == 'All' || _selectedCategory == 'Support';
+  }
+
+  Widget _buildCategoryPills() {
+    return SizedBox(
+      height: 38,
+      child: ListView.separated(
+        scrollDirection: Axis.horizontal,
+        itemCount: _categories.length,
+        separatorBuilder: (_, _) => const SizedBox(width: 8),
+        itemBuilder: (context, index) {
+          final category = _categories[index];
+          final isSelected = category == _selectedCategory;
+          return _CategoryPill(
+            label: category,
+            isSelected: isSelected,
+            onTap: () {
+              if (isSelected) return;
+              setState(() {
+                _selectedCategory = category;
+              });
+            },
+          );
+        },
       ),
     );
   }
@@ -130,7 +188,10 @@ class _HomeScreenState extends State<HomeScreen> {
           Row(
             children: [
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 6,
+                ),
                 decoration: BoxDecoration(
                   color: Colors.white.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(999),
@@ -184,9 +245,7 @@ class _HomeScreenState extends State<HomeScreen> {
               minimumSize: const Size(double.infinity, 48),
               backgroundColor: Colors.white,
               foregroundColor: _indigo,
-              textStyle: const TextStyle(
-                fontWeight: FontWeight.w800,
-              ),
+              textStyle: const TextStyle(fontWeight: FontWeight.w800),
             ),
           ),
         ],
@@ -299,27 +358,21 @@ class _HomeScreenState extends State<HomeScreen> {
   void _openCheatSheets() {
     Navigator.push(
       context,
-      MaterialPageRoute(
-        builder: (context) => const CheatSheetsScreen(),
-      ),
+      MaterialPageRoute(builder: (context) => const CheatSheetsScreen()),
     );
   }
 
   void _openTutorChat() {
     Navigator.push(
       context,
-      MaterialPageRoute(
-        builder: (context) => const TutorChatScreen(),
-      ),
+      MaterialPageRoute(builder: (context) => const TutorChatScreen()),
     );
   }
 
   void _openCalculator() {
     Navigator.push(
       context,
-      MaterialPageRoute(
-        builder: (context) => const CalculatorScreen(),
-      ),
+      MaterialPageRoute(builder: (context) => const CalculatorScreen()),
     );
   }
 
@@ -328,6 +381,41 @@ class _HomeScreenState extends State<HomeScreen> {
     const horizontalPadding = 32.0; // ListView horizontal padding (16 * 2)
     const spacing = 12.0;
     final cardWidth = (screenWidth - horizontalPadding - spacing) / 2;
+    final cards = <Widget>[];
+
+    if (_shouldShowPractice()) {
+      cards.add(
+        _LearningToolCard(
+          width: cardWidth,
+          icon: Icons.quiz_outlined,
+          label: 'Quizzes',
+          subtitle: 'Test your math skills',
+          onTap: () => _showSubjectPicker(context),
+          iconColor: _indigo,
+          iconBackgroundColor: const Color(0xFFE6E8FF),
+          cardBackgroundColor: const Color(0xFFF4F6FF),
+        ),
+      );
+    }
+
+    if (_shouldShowReference()) {
+      cards.add(
+        _LearningToolCard(
+          width: cardWidth,
+          icon: Icons.menu_book_outlined,
+          label: 'Cheat Sheets',
+          subtitle: 'Quick formulas and rules',
+          onTap: _openCheatSheets,
+          iconColor: const Color(0xFF087E8B),
+          iconBackgroundColor: const Color(0xFFDDF9FC),
+          cardBackgroundColor: const Color(0xFFF0FCFE),
+        ),
+      );
+    }
+
+    if (cards.isEmpty) {
+      return const SizedBox.shrink();
+    }
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -340,28 +428,7 @@ class _HomeScreenState extends State<HomeScreen> {
         Wrap(
           spacing: 12,
           runSpacing: 12,
-          children: [
-            _LearningToolCard(
-              width: cardWidth,
-              icon: Icons.quiz_outlined,
-              label: 'Quizzes',
-              subtitle: 'Test your math skills',
-              onTap: () => _showSubjectPicker(context),
-              iconColor: _indigo,
-              iconBackgroundColor: const Color(0xFFE6E8FF),
-              cardBackgroundColor: const Color(0xFFF4F6FF),
-            ),
-            _LearningToolCard(
-              width: cardWidth,
-              icon: Icons.menu_book_outlined,
-              label: 'Cheat Sheets',
-              subtitle: 'Quick formulas and rules',
-              onTap: _openCheatSheets,
-              iconColor: const Color(0xFF087E8B),
-              iconBackgroundColor: const Color(0xFFDDF9FC),
-              cardBackgroundColor: const Color(0xFFF0FCFE),
-            ),
-          ],
+          children: cards,
         ),
         const SizedBox(height: 32),
       ],
@@ -373,6 +440,36 @@ class _HomeScreenState extends State<HomeScreen> {
     const horizontalPadding = 32.0;
     const spacing = 12.0;
     final cardWidth = (screenWidth - horizontalPadding - spacing) / 2;
+    final cards = <Widget>[];
+
+    if (_shouldShowSupport()) {
+      cards.addAll([
+        _LearningToolCard(
+          width: cardWidth,
+          icon: Icons.support_agent_rounded,
+          label: 'Tutor Chat',
+          subtitle: 'Ask Math Questions',
+          onTap: _openTutorChat,
+          iconColor: _orchid,
+          iconBackgroundColor: const Color(0xFFF9E1FF),
+          cardBackgroundColor: const Color(0xFFFEF5FF),
+        ),
+        _LearningToolCard(
+          width: cardWidth,
+          icon: Icons.calculate_outlined,
+          label: 'Calculator',
+          subtitle: 'Quick basic calculations',
+          onTap: _openCalculator,
+          iconColor: _cyan,
+          iconBackgroundColor: const Color(0xFFDDF9FF),
+          cardBackgroundColor: const Color(0xFFEFFBFF),
+        ),
+      ]);
+    }
+
+    if (cards.isEmpty) {
+      return const SizedBox.shrink();
+    }
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -385,34 +482,12 @@ class _HomeScreenState extends State<HomeScreen> {
         Wrap(
           spacing: 12,
           runSpacing: 12,
-          children: [
-            _LearningToolCard(
-              width: cardWidth,
-              icon: Icons.support_agent_rounded,
-              label: 'Tutor Chat',
-              subtitle: 'Ask Math Questions',
-              onTap: _openTutorChat,
-              iconColor: _orchid,
-              iconBackgroundColor: const Color(0xFFF9E1FF),
-              cardBackgroundColor: const Color(0xFFFEF5FF),
-            ),
-            _LearningToolCard(
-              width: cardWidth,
-              icon: Icons.calculate_outlined,
-              label: 'Calculator',
-              subtitle: 'Quick basic calculations',
-              onTap: _openCalculator,
-              iconColor: _cyan,
-              iconBackgroundColor: const Color(0xFFDDF9FF),
-              cardBackgroundColor: const Color(0xFFEFFBFF),
-            ),
-          ],
+          children: cards,
         ),
         const SizedBox(height: 32),
       ],
     );
   }
-
 }
 
 class _LearningToolCard extends StatelessWidget {
@@ -447,9 +522,7 @@ class _LearningToolCard extends StatelessWidget {
         color: cardBackgroundColor,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(18),
-          side: BorderSide(
-            color: Colors.black.withValues(alpha: 0.04),
-          ),
+          side: BorderSide(color: Colors.black.withValues(alpha: 0.04)),
         ),
         child: InkWell(
           onTap: onTap,
@@ -501,10 +574,7 @@ class _LearningToolCard extends StatelessWidget {
 }
 
 class _SectionHeader extends StatelessWidget {
-  const _SectionHeader({
-    required this.title,
-    required this.subtitle,
-  });
+  const _SectionHeader({required this.title, required this.subtitle});
 
   final String title;
   final String subtitle;
@@ -534,6 +604,51 @@ class _SectionHeader extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+}
+
+class _CategoryPill extends StatelessWidget {
+  const _CategoryPill({
+    required this.label,
+    required this.isSelected,
+    required this.onTap,
+  });
+
+  final String label;
+  final bool isSelected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final selectedColor = Theme.of(context).colorScheme.primary;
+    final borderColor =
+        isSelected ? selectedColor : Theme.of(context).dividerColor.withValues(alpha: 0.3);
+    final textColor =
+        isSelected ? selectedColor : Theme.of(context).colorScheme.onSurfaceVariant;
+
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(999),
+        onTap: onTap,
+        child: Ink(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+          decoration: BoxDecoration(
+            color: isSelected ? selectedColor.withValues(alpha: 0.12) : Colors.transparent,
+            borderRadius: BorderRadius.circular(999),
+            border: Border.all(color: borderColor),
+          ),
+          child: Text(
+            label,
+            style: TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
+              color: textColor,
+            ),
+          ),
+        ),
+      ),
     );
   }
 }
