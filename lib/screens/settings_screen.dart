@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 
 import '../services/supabase_service.dart';
 
@@ -12,6 +13,29 @@ class SettingsScreen extends StatefulWidget {
 
 class _SettingsScreenState extends State<SettingsScreen> {
   final SupabaseService _supabaseService = SupabaseService();
+
+  /// Filled from native bundle metadata (matches `pubspec.yaml` version at build time).
+  String _appVersionLabel = '…';
+
+  @override
+  void initState() {
+    super.initState();
+    _loadPackageInfo();
+  }
+
+  Future<void> _loadPackageInfo() async {
+    try {
+      final info = await PackageInfo.fromPlatform();
+      if (!mounted) return;
+      setState(() {
+        _appVersionLabel =
+            'Math Copilot AI v${info.version} (${info.buildNumber})';
+      });
+    } catch (_) {
+      if (!mounted) return;
+      setState(() => _appVersionLabel = 'Math Copilot AI');
+    }
+  }
 
   /// Matches Home welcome headline (`_buildWelcomeHeader`).
   TextStyle _pageTitleStyle(ColorScheme colorScheme) => TextStyle(
@@ -84,7 +108,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         leading: Icon(Icons.info_outline, color: colorScheme.onSurface),
         title: Text('About', style: _rowTitleStyle(colorScheme)),
         subtitle: Text(
-          'Math Copilot AI v1.0.0',
+          _appVersionLabel,
           style: _rowSubtitleStyle(colorScheme),
         ),
       ),
