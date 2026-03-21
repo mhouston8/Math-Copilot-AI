@@ -6,21 +6,21 @@ import 'cheat_sheets_screen.dart';
 import 'quiz_screen.dart';
 import 'tutor_chat_screen.dart';
 
-enum HomeCategory { all, scan, practice, reference, support }
+enum HomeCategory { all, quizzes, cheatSheets, tutor, calculator }
 
 extension HomeCategoryLabel on HomeCategory {
   String get label {
     switch (this) {
       case HomeCategory.all:
         return 'All';
-      case HomeCategory.scan:
-        return 'Scan';
-      case HomeCategory.practice:
-        return 'Practice';
-      case HomeCategory.reference:
-        return 'Reference';
-      case HomeCategory.support:
-        return 'Support';
+      case HomeCategory.quizzes:
+        return 'Quizzes';
+      case HomeCategory.cheatSheets:
+        return 'Cheat sheets';
+      case HomeCategory.tutor:
+        return 'Tutor';
+      case HomeCategory.calculator:
+        return 'Calculators';
     }
   }
 }
@@ -62,7 +62,11 @@ class _HomeScreenState extends State<HomeScreen> {
                 _buildCategoryPills(),
                 const SizedBox(height: 20),
                 _buildLearningToolsSection(context),
-                _buildQuickAccessSection(context),
+                _buildTutorOrCalculatorSection(context),
+                if (_selectedCategory == HomeCategory.all) ...[
+                  const SizedBox(height: 20),
+                  _buildRecentChatsSection(context),
+                ],
               ]),
             ),
           ),
@@ -88,30 +92,46 @@ class _HomeScreenState extends State<HomeScreen> {
           _buildCategoryPills(),
           const SizedBox(height: 20),
           _buildLearningToolsSection(context),
-          _buildQuickAccessSection(context),
+          _buildTutorOrCalculatorSection(context),
+          if (_selectedCategory == HomeCategory.all) ...[
+            const SizedBox(height: 20),
+            _buildRecentChatsSection(context),
+          ],
         ],
       ),
     );
   }
 
+  /// Premium upsell — full home only; homework scan uses the tab bar.
   bool _shouldShowScanBanner() {
-    return _selectedCategory == HomeCategory.all ||
-        _selectedCategory == HomeCategory.scan;
+    return _selectedCategory == HomeCategory.all;
   }
 
-  bool _shouldShowPractice() {
+  bool _shouldShowQuizzes() {
     return _selectedCategory == HomeCategory.all ||
-        _selectedCategory == HomeCategory.practice;
+        _selectedCategory == HomeCategory.quizzes;
   }
 
-  bool _shouldShowReference() {
+  bool _shouldShowCheatSheets() {
     return _selectedCategory == HomeCategory.all ||
-        _selectedCategory == HomeCategory.reference;
+        _selectedCategory == HomeCategory.cheatSheets;
   }
 
-  bool _shouldShowSupport() {
-    return _selectedCategory == HomeCategory.all ||
-        _selectedCategory == HomeCategory.support;
+  bool _shouldShowTutorChatCard() {
+    return _selectedCategory == HomeCategory.tutor;
+  }
+
+  bool _shouldShowCalculatorCard() {
+    return _selectedCategory == HomeCategory.calculator;
+  }
+
+  Widget _buildRecentChatsSection(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _SectionHeader(title: 'Recent chats'),
+      ],
+    );
   }
 
   Widget _buildCategoryPills() {
@@ -348,7 +368,7 @@ class _HomeScreenState extends State<HomeScreen> {
     final cardWidth = (screenWidth - horizontalPadding - spacing) / 2;
     final cards = <Widget>[];
 
-    if (_shouldShowPractice()) {
+    if (_shouldShowQuizzes()) {
       cards.add(
         _LearningToolCard(
           width: cardWidth,
@@ -363,7 +383,7 @@ class _HomeScreenState extends State<HomeScreen> {
       );
     }
 
-    if (_shouldShowReference()) {
+    if (_shouldShowCheatSheets()) {
       cards.add(
         _LearningToolCard(
           width: cardWidth,
@@ -382,12 +402,25 @@ class _HomeScreenState extends State<HomeScreen> {
       return const SizedBox.shrink();
     }
 
+    final (sectionTitle, sectionSubtitle) = switch ((
+      _shouldShowQuizzes(),
+      _shouldShowCheatSheets(),
+    )) {
+      (true, true) => (
+          'Learning Tools',
+          'Build skills with guided practice',
+        ),
+      (true, false) => ('Quizzes', 'Test your math skills'),
+      (false, true) => ('Cheat Sheets', 'Quick formulas and rules'),
+      (false, false) => ('', ''),
+    };
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _SectionHeader(
-          title: 'Learning Tools',
-          subtitle: 'Build skills with guided practice',
+          title: sectionTitle,
+          subtitle: sectionSubtitle,
         ),
         const SizedBox(height: 12),
         Wrap(spacing: 12, runSpacing: 12, children: cards),
@@ -396,54 +429,75 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildQuickAccessSection(BuildContext context) {
+  /// Tutor Chat or Calculator — only when that pill is selected (not on All).
+  Widget _buildTutorOrCalculatorSection(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
     const horizontalPadding = 32.0;
     const spacing = 12.0;
     final cardWidth = (screenWidth - horizontalPadding - spacing) / 2;
-    final cards = <Widget>[];
 
-    if (_shouldShowSupport()) {
-      cards.addAll([
-        _LearningToolCard(
-          width: cardWidth,
-          icon: Icons.support_agent_rounded,
-          label: 'Tutor Chat',
-          subtitle: 'Ask Math Questions',
-          onTap: _openTutorChat,
-          iconColor: _orchid,
-          iconBackgroundColor: const Color(0xFFF9E1FF),
-          cardBackgroundColor: const Color(0xFFFEF5FF),
-        ),
-        _LearningToolCard(
-          width: cardWidth,
-          icon: Icons.calculate_outlined,
-          label: 'Calculator',
-          subtitle: 'Quick basic calculations',
-          onTap: _openCalculator,
-          iconColor: _cyan,
-          iconBackgroundColor: const Color(0xFFDDF9FF),
-          cardBackgroundColor: const Color(0xFFEFFBFF),
-        ),
-      ]);
+    if (_shouldShowTutorChatCard()) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const _SectionHeader(
+            title: 'Tutor Chat',
+            subtitle:
+                'Ask math questions and get step-by-step help',
+          ),
+          const SizedBox(height: 12),
+          Wrap(
+            spacing: 12,
+            runSpacing: 12,
+            children: [
+              _LearningToolCard(
+                width: cardWidth,
+                icon: Icons.support_agent_rounded,
+                label: 'Tutor Chat',
+                subtitle: 'Ask Math Questions',
+                onTap: _openTutorChat,
+                iconColor: _orchid,
+                iconBackgroundColor: const Color(0xFFF9E1FF),
+                cardBackgroundColor: const Color(0xFFFEF5FF),
+              ),
+            ],
+          ),
+          const SizedBox(height: 32),
+        ],
+      );
     }
 
-    if (cards.isEmpty) {
-      return const SizedBox.shrink();
+    if (_shouldShowCalculatorCard()) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const _SectionHeader(
+            title: 'Calculators',
+            subtitle: 'Quick basic calculations',
+          ),
+          const SizedBox(height: 12),
+          Wrap(
+            spacing: 12,
+            runSpacing: 12,
+            children: [
+              _LearningToolCard(
+                width: cardWidth,
+                icon: Icons.calculate_outlined,
+                label: 'Calculator',
+                subtitle: 'Quick basic calculations',
+                onTap: _openCalculator,
+                iconColor: _cyan,
+                iconBackgroundColor: const Color(0xFFDDF9FF),
+                cardBackgroundColor: const Color(0xFFEFFBFF),
+              ),
+            ],
+          ),
+          const SizedBox(height: 32),
+        ],
+      );
     }
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        _SectionHeader(
-          title: 'Quick Access',
-          subtitle: 'Jump straight into support tools',
-        ),
-        const SizedBox(height: 12),
-        Wrap(spacing: 12, runSpacing: 12, children: cards),
-        const SizedBox(height: 32),
-      ],
-    );
+    return const SizedBox.shrink();
   }
 }
 
@@ -531,10 +585,10 @@ class _LearningToolCard extends StatelessWidget {
 }
 
 class _SectionHeader extends StatelessWidget {
-  const _SectionHeader({required this.title, required this.subtitle});
+  const _SectionHeader({required this.title, this.subtitle});
 
   final String title;
-  final String subtitle;
+  final String? subtitle;
 
   @override
   Widget build(BuildContext context) {
@@ -551,15 +605,17 @@ class _SectionHeader extends StatelessWidget {
             color: colorScheme.onSurface,
           ),
         ),
-        const SizedBox(height: 2),
-        Text(
-          subtitle,
-          style: TextStyle(
-            fontSize: 13,
-            fontWeight: FontWeight.w500,
-            color: colorScheme.onSurfaceVariant,
+        if (subtitle != null && subtitle!.isNotEmpty) ...[
+          const SizedBox(height: 2),
+          Text(
+            subtitle!,
+            style: TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.w500,
+              color: colorScheme.onSurfaceVariant,
+            ),
           ),
-        ),
+        ],
       ],
     );
   }
