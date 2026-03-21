@@ -1,12 +1,29 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
 
 import 'calculator_screen.dart';
 import 'cheat_sheets_screen.dart';
 import 'quiz_screen.dart';
-import 'result_screen.dart';
 import 'tutor_chat_screen.dart';
+
+enum HomeCategory { all, scan, practice, reference, support }
+
+extension HomeCategoryLabel on HomeCategory {
+  String get label {
+    switch (this) {
+      case HomeCategory.all:
+        return 'All';
+      case HomeCategory.scan:
+        return 'Scan';
+      case HomeCategory.practice:
+        return 'Practice';
+      case HomeCategory.reference:
+        return 'Reference';
+      case HomeCategory.support:
+        return 'Support';
+    }
+  }
+}
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -19,29 +36,9 @@ class _HomeScreenState extends State<HomeScreen> {
   static const Color _indigo = Color(0xFF4F46E5);
   static const Color _orchid = Color(0xFFB832D9);
   static const Color _cyan = Color(0xFF06B6D4);
-  static const List<String> _categories = [
-    'All',
-    'Scan',
-    'Practice',
-    'Reference',
-    'Support',
-  ];
+  static const List<HomeCategory> _categories = HomeCategory.values;
 
-  String _selectedCategory = 'All';
-
-  Future<void> _scanProblem() async {
-    final picker = ImagePicker();
-    final XFile? photo = await picker.pickImage(source: ImageSource.camera);
-
-    if (!mounted || photo == null) return;
-
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => ResultScreen(imagePath: photo.path),
-      ),
-    );
-  }
+  HomeCategory _selectedCategory = HomeCategory.all;
 
   @override
   Widget build(BuildContext context) {
@@ -57,12 +54,12 @@ class _HomeScreenState extends State<HomeScreen> {
             padding: const EdgeInsets.fromLTRB(16, 10, 16, 24),
             sliver: SliverList(
               delegate: SliverChildListDelegate([
-                _buildCategoryPills(),
-                const SizedBox(height: 16),
                 if (_shouldShowScanBanner()) ...[
                   _buildScanBanner(context),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 16),
                 ],
+                _buildCategoryPills(),
+                const SizedBox(height: 20),
                 _buildLearningToolsSection(context),
                 _buildQuickAccessSection(context),
               ]),
@@ -83,12 +80,12 @@ class _HomeScreenState extends State<HomeScreen> {
         children: [
           _buildWelcomeHeader(context),
           const SizedBox(height: 12),
-          _buildCategoryPills(),
-          const SizedBox(height: 16),
           if (_shouldShowScanBanner()) ...[
             _buildScanBanner(context),
-            const SizedBox(height: 20),
+            const SizedBox(height: 16),
           ],
+          _buildCategoryPills(),
+          const SizedBox(height: 20),
           _buildLearningToolsSection(context),
           _buildQuickAccessSection(context),
         ],
@@ -97,19 +94,23 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   bool _shouldShowScanBanner() {
-    return _selectedCategory == 'All' || _selectedCategory == 'Scan';
+    return _selectedCategory == HomeCategory.all ||
+        _selectedCategory == HomeCategory.scan;
   }
 
   bool _shouldShowPractice() {
-    return _selectedCategory == 'All' || _selectedCategory == 'Practice';
+    return _selectedCategory == HomeCategory.all ||
+        _selectedCategory == HomeCategory.practice;
   }
 
   bool _shouldShowReference() {
-    return _selectedCategory == 'All' || _selectedCategory == 'Reference';
+    return _selectedCategory == HomeCategory.all ||
+        _selectedCategory == HomeCategory.reference;
   }
 
   bool _shouldShowSupport() {
-    return _selectedCategory == 'All' || _selectedCategory == 'Support';
+    return _selectedCategory == HomeCategory.all ||
+        _selectedCategory == HomeCategory.support;
   }
 
   Widget _buildCategoryPills() {
@@ -123,7 +124,7 @@ class _HomeScreenState extends State<HomeScreen> {
           final category = _categories[index];
           final isSelected = category == _selectedCategory;
           return _CategoryPill(
-            label: category,
+            label: category.label,
             isSelected: isSelected,
             onTap: () {
               if (isSelected) return;
@@ -166,87 +167,50 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Widget _buildScanBanner(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 35),
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(22),
+        borderRadius: BorderRadius.circular(12),
         gradient: const LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [_indigo, _orchid],
+          begin: Alignment.centerLeft,
+          end: Alignment.centerRight,
+          colors: [_orchid, Color(0xFF1E90FF)],
         ),
-        boxShadow: const [
-          BoxShadow(
-            color: Color(0x3A4F46E5),
-            blurRadius: 20,
-            offset: Offset(0, 10),
-          ),
-        ],
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      child: Row(
         children: [
-          Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 10,
-                  vertical: 6,
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  'Upgrade to Premium',
+                  style: const TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w700,
+                    height: 1.2,
+                    letterSpacing: -0.05,
+                    color: Colors.white,
+                  ),
                 ),
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.2),
-                  borderRadius: BorderRadius.circular(999),
+                const SizedBox(height: 2),
+                Text(
+                  'Unlimited access to premium math tools.',
+                  style: TextStyle(
+                    fontSize: 11.5,
+                    fontWeight: FontWeight.w500,
+                    height: 1.25,
+                    color: Colors.white.withValues(alpha: 0.9),
+                  ),
                 ),
-                child: const Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(Icons.bolt_rounded, size: 14, color: Colors.white),
-                    SizedBox(width: 6),
-                    Text(
-                      'MOST POPULAR',
-                      style: TextStyle(
-                        fontSize: 11,
-                        fontWeight: FontWeight.w700,
-                        letterSpacing: 0.3,
-                        color: Colors.white,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          Text(
-            'Snap a problem,\nget a step-by-step explanation.',
-            style: const TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.w800,
-              height: 1.15,
-              letterSpacing: -0.35,
-              color: Colors.white,
+              ],
             ),
           ),
-          const SizedBox(height: 8),
-          Text(
-            'Use your camera to solve homework faster and understand each step.',
-            style: TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.w500,
-              height: 1.35,
-              color: Colors.white.withValues(alpha: 0.93),
-            ),
-          ),
-          const SizedBox(height: 14),
-          ElevatedButton.icon(
-            onPressed: _scanProblem,
-            icon: const Icon(Icons.document_scanner_outlined),
-            label: const Text('Scan Problem'),
-            style: ElevatedButton.styleFrom(
-              minimumSize: const Size(double.infinity, 48),
-              backgroundColor: Colors.white,
-              foregroundColor: _indigo,
-              textStyle: const TextStyle(fontWeight: FontWeight.w800),
-            ),
+          const SizedBox(width: 10),
+          Icon(
+            Icons.chevron_right_rounded,
+            color: Colors.white.withValues(alpha: 0.95),
+            size: 20,
           ),
         ],
       ),
@@ -425,11 +389,7 @@ class _HomeScreenState extends State<HomeScreen> {
           subtitle: 'Build skills with guided practice',
         ),
         const SizedBox(height: 12),
-        Wrap(
-          spacing: 12,
-          runSpacing: 12,
-          children: cards,
-        ),
+        Wrap(spacing: 12, runSpacing: 12, children: cards),
         const SizedBox(height: 32),
       ],
     );
@@ -479,11 +439,7 @@ class _HomeScreenState extends State<HomeScreen> {
           subtitle: 'Jump straight into support tools',
         ),
         const SizedBox(height: 12),
-        Wrap(
-          spacing: 12,
-          runSpacing: 12,
-          children: cards,
-        ),
+        Wrap(spacing: 12, runSpacing: 12, children: cards),
         const SizedBox(height: 32),
       ],
     );
@@ -622,10 +578,12 @@ class _CategoryPill extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final selectedColor = Theme.of(context).colorScheme.primary;
-    final borderColor =
-        isSelected ? selectedColor : Theme.of(context).dividerColor.withValues(alpha: 0.3);
-    final textColor =
-        isSelected ? selectedColor : Theme.of(context).colorScheme.onSurfaceVariant;
+    final borderColor = isSelected
+        ? selectedColor
+        : Theme.of(context).dividerColor.withValues(alpha: 0.3);
+    final textColor = isSelected
+        ? selectedColor
+        : Theme.of(context).colorScheme.onSurfaceVariant;
 
     return Material(
       color: Colors.transparent,
@@ -635,7 +593,9 @@ class _CategoryPill extends StatelessWidget {
         child: Ink(
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
           decoration: BoxDecoration(
-            color: isSelected ? selectedColor.withValues(alpha: 0.12) : Colors.transparent,
+            color: isSelected
+                ? selectedColor.withValues(alpha: 0.12)
+                : Colors.transparent,
             borderRadius: BorderRadius.circular(999),
             border: Border.all(color: borderColor),
           ),

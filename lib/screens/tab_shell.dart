@@ -39,7 +39,7 @@ class _TabShellState extends State<TabShell> {
           NavigationDestination(
             icon: Icon(Icons.camera_alt_outlined),
             selectedIcon: Icon(Icons.camera_alt),
-            label: 'Camera',
+            label: 'Scan',
           ),
           NavigationDestination(
             icon: Icon(Icons.settings_outlined),
