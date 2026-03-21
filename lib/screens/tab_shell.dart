@@ -34,10 +34,7 @@ class _TabShellState extends State<TabShell> {
     return Scaffold(
       body: IndexedStack(
         index: _currentIndex,
-        children: [
-          const HomeScreen(),
-          const SettingsScreen(),
-        ],
+        children: [const HomeScreen(), const SettingsScreen()],
       ),
       bottomNavigationBar: SafeArea(
         minimum: const EdgeInsets.fromLTRB(16, 0, 16, 12),

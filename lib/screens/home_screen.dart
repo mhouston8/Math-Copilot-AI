@@ -48,6 +48,7 @@ class _HomeScreenState extends State<HomeScreen> {
         physics: const AlwaysScrollableScrollPhysics(),
         slivers: [
           const CupertinoSliverNavigationBar(
+            heroTag: 'home-large-title-nav-bar',
             largeTitle: Text('Math Copilot AI'),
           ),
           SliverPadding(

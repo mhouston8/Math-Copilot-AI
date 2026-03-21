@@ -53,7 +53,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
       return CustomScrollView(
         physics: const AlwaysScrollableScrollPhysics(),
         slivers: [
-          const CupertinoSliverNavigationBar(largeTitle: Text('Settings')),
+          const CupertinoSliverNavigationBar(
+            heroTag: 'settings-large-title-nav-bar',
+            largeTitle: Text('Settings'),
+          ),
           SliverPadding(
             padding: const EdgeInsets.fromLTRB(16, 10, 16, 24),
             sliver: SliverList(delegate: SliverChildListDelegate(settingsTiles)),
