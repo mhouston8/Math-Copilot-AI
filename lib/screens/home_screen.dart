@@ -42,7 +42,7 @@ class _HomeScreenState extends State<HomeScreen> {
         physics: const AlwaysScrollableScrollPhysics(),
         slivers: [
           const CupertinoSliverNavigationBar(
-            largeTitle: Text('Home'),
+            largeTitle: Text('Math Copilot AI'),
           ),
           SliverPadding(
             padding: const EdgeInsets.fromLTRB(16, 10, 16, 24),
@@ -59,17 +59,23 @@ class _HomeScreenState extends State<HomeScreen> {
       );
     }
 
-    return ListView(
-      physics: const AlwaysScrollableScrollPhysics(),
-      padding: const EdgeInsets.fromLTRB(16, 10, 16, 24),
-      children: [
-        _buildWelcomeHeader(context),
-        const SizedBox(height: 12),
-        _buildScanBanner(context),
-        const SizedBox(height: 20),
-        _buildLearningToolsSection(context),
-        _buildQuickAccessSection(context),
-      ],
+    final isAndroid = Theme.of(context).platform == TargetPlatform.android;
+    final topContentPadding = isAndroid ? 24.0 : 10.0;
+
+    return SafeArea(
+      bottom: false,
+      child: ListView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        padding: EdgeInsets.fromLTRB(16, topContentPadding, 16, 24),
+        children: [
+          _buildWelcomeHeader(context),
+          const SizedBox(height: 12),
+          _buildScanBanner(context),
+          const SizedBox(height: 20),
+          _buildLearningToolsSection(context),
+          _buildQuickAccessSection(context),
+        ],
+      ),
     );
   }
 
@@ -79,7 +85,7 @@ class _HomeScreenState extends State<HomeScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Let\'s make math click.',
+          'Math Copilot',
           style: TextStyle(
             fontSize: 28,
             fontWeight: FontWeight.w800,
