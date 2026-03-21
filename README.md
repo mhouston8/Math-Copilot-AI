@@ -22,11 +22,10 @@ lib/
 │   ├── analysis_result.dart     # Data model for AI responses
 │   └── chat_message.dart        # Data model for chat messages
 ├── screens/
-│   ├── tab_shell.dart           # Bottom tab bar (Home, Camera, Settings)
-│   ├── home_screen.dart         # Welcome / conversation history
-│   ├── camera_screen.dart       # Take photo or pick from gallery
+│   ├── tab_shell.dart           # Home + Settings tabs, floating scan action
+│   ├── home_screen.dart         # Learning tools hub (quizzes, sheets, etc.)
 │   ├── result_screen.dart       # Photo preview + "Analyze" button
-│   ├── chat_screen.dart         # AI chat with follow-up questions
+│   ├── chat_screen.dart         # AI chat with follow-up questions (after scan)
 │   └── settings_screen.dart     # App settings
 └── services/
     ├── openai_service.dart      # OpenAI API integration
@@ -46,13 +45,12 @@ Screens call services directly. Services handle all network/database logic.
 ## App Flow
 
 ```
-1. User opens app → Tab bar (Home, Camera, Settings)
-2. User taps Camera tab → Take photo or pick from gallery
-3. Photo taken → Result screen shows preview
-4. User taps "Analyze with AI" → Loading spinner
-5. AI responds → Chat screen with solution
-6. User asks follow-up questions → Multi-turn conversation
-7. Conversation auto-saved to Supabase
+1. User opens app → Onboarding (first launch) → Tab shell (Home, Settings) + scan button
+2. User taps scan → Camera → Result screen shows preview
+3. User taps "Analyze with AI" → Loading spinner
+4. AI responds → Chat screen with solution
+5. User asks follow-up questions → Multi-turn conversation
+6. Conversation auto-saved to Supabase (when signed in)
 ```
 
 ## Database Schema (Supabase)
