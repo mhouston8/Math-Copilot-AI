@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import '../services/supabase_service.dart';
@@ -14,41 +15,67 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isIOS = Theme.of(context).platform == TargetPlatform.iOS;
     final isAnonymous = _supabaseService.isAnonymous;
     final email = _supabaseService.currentUser?.email ?? 'Anonymous user';
-
-    return ListView(
-      children: [
-        const SizedBox(height: 16),
-        ListTile(
-          leading: const Icon(Icons.person),
-          title: const Text('Account'),
-          subtitle: Text(isAnonymous ? 'Anonymous user' : email),
-        ),
-
-        if (isAnonymous) ...[
-          const Divider(),
-          ListTile(
-            leading: Icon(
-              Icons.upgrade,
-              color: Theme.of(context).colorScheme.primary,
-            ),
-            title: Text(
-              'Create Account',
-              style: TextStyle(color: Theme.of(context).colorScheme.primary),
-            ),
-            subtitle: const Text('Save your data across devices'),
-            trailing: const Icon(Icons.chevron_right),
-            onTap: () => _showCreateAccountDialog(context),
-          ),
-        ],
-
+    final colorScheme = Theme.of(context).colorScheme;
+    final settingsTiles = <Widget>[
+      ListTile(
+        leading: const Icon(Icons.person),
+        title: const Text('Account'),
+        subtitle: Text(isAnonymous ? 'Anonymous user' : email),
+      ),
+      if (isAnonymous) ...[
         const Divider(),
         ListTile(
-          leading: const Icon(Icons.info_outline),
-          title: const Text('About'),
-          subtitle: const Text('Math Copilot AI v1.0.0'),
+          leading: Icon(
+            Icons.upgrade,
+            color: Theme.of(context).colorScheme.primary,
+          ),
+          title: Text(
+            'Create Account',
+            style: TextStyle(color: Theme.of(context).colorScheme.primary),
+          ),
+          subtitle: const Text('Save your data across devices'),
+          trailing: const Icon(Icons.chevron_right),
+          onTap: () => _showCreateAccountDialog(context),
         ),
+      ],
+      const Divider(),
+      const ListTile(
+        leading: Icon(Icons.info_outline),
+        title: Text('About'),
+        subtitle: Text('Math Copilot AI v1.0.0'),
+      ),
+    ];
+
+    if (isIOS) {
+      return CustomScrollView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        slivers: [
+          const CupertinoSliverNavigationBar(largeTitle: Text('Settings')),
+          SliverPadding(
+            padding: const EdgeInsets.fromLTRB(16, 10, 16, 24),
+            sliver: SliverList(delegate: SliverChildListDelegate(settingsTiles)),
+          ),
+        ],
+      );
+    }
+
+    return ListView(
+      padding: const EdgeInsets.fromLTRB(16, 24, 16, 24),
+      children: [
+        Text(
+          'Settings',
+          style: TextStyle(
+            fontSize: 28,
+            fontWeight: FontWeight.w800,
+            letterSpacing: -0.4,
+            color: colorScheme.onSurface,
+          ),
+        ),
+        const SizedBox(height: 12),
+        ...settingsTiles,
       ],
     );
   }
@@ -104,9 +131,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 }
               } catch (e) {
                 if (context.mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Error: $e')),
-                  );
+                  ScaffoldMessenger.of(
+                    context,
+                  ).showSnackBar(SnackBar(content: Text('Error: $e')));
                 }
               }
             },
