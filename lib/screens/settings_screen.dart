@@ -13,41 +13,90 @@ class SettingsScreen extends StatefulWidget {
 class _SettingsScreenState extends State<SettingsScreen> {
   final SupabaseService _supabaseService = SupabaseService();
 
+  /// Matches Home welcome headline (`_buildWelcomeHeader`).
+  TextStyle _pageTitleStyle(ColorScheme colorScheme) => TextStyle(
+    fontSize: 28,
+    fontWeight: FontWeight.w800,
+    letterSpacing: -0.4,
+    color: colorScheme.onSurface,
+  );
+
+  /// Matches Home welcome subtitle.
+  TextStyle _pageSubtitleStyle(ColorScheme colorScheme) => TextStyle(
+    fontSize: 15,
+    fontWeight: FontWeight.w500,
+    color: colorScheme.onSurfaceVariant,
+  );
+
+  /// Matches `_LearningToolCard` label.
+  TextStyle _rowTitleStyle(ColorScheme colorScheme) => TextStyle(
+    fontSize: 16,
+    fontWeight: FontWeight.w800,
+    letterSpacing: -0.1,
+    color: colorScheme.onSurface,
+  );
+
+  /// Matches `_LearningToolCard` subtitle.
+  TextStyle _rowSubtitleStyle(ColorScheme colorScheme) => TextStyle(
+    fontSize: 12.5,
+    height: 1.3,
+    fontWeight: FontWeight.w500,
+    color: colorScheme.onSurfaceVariant,
+  );
+
   @override
   Widget build(BuildContext context) {
     final isIOS = Theme.of(context).platform == TargetPlatform.iOS;
     final isAnonymous = _supabaseService.isAnonymous;
     final email = _supabaseService.currentUser?.email ?? 'Anonymous user';
     final colorScheme = Theme.of(context).colorScheme;
+
     final settingsTiles = <Widget>[
       ListTile(
-        leading: const Icon(Icons.person),
-        title: const Text('Account'),
-        subtitle: Text(isAnonymous ? 'Anonymous user' : email),
+        contentPadding: EdgeInsets.zero,
+        leading: Icon(Icons.person, color: colorScheme.onSurface),
+        title: Text('Account', style: _rowTitleStyle(colorScheme)),
+        subtitle: Text(
+          isAnonymous ? 'Anonymous user' : email,
+          style: _rowSubtitleStyle(colorScheme),
+        ),
       ),
       if (isAnonymous) ...[
         const Divider(),
         ListTile(
-          leading: Icon(
-            Icons.upgrade,
-            color: Theme.of(context).colorScheme.primary,
+          contentPadding: EdgeInsets.zero,
+          leading: Icon(Icons.upgrade, color: colorScheme.onSurface),
+          title: Text('Create Account', style: _rowTitleStyle(colorScheme)),
+          subtitle: Text(
+            'Save your data across devices',
+            style: _rowSubtitleStyle(colorScheme),
           ),
-          title: Text(
-            'Create Account',
-            style: TextStyle(color: Theme.of(context).colorScheme.primary),
+          trailing: Icon(
+            Icons.chevron_right,
+            color: colorScheme.onSurfaceVariant,
           ),
-          subtitle: const Text('Save your data across devices'),
-          trailing: const Icon(Icons.chevron_right),
           onTap: () => _showCreateAccountDialog(context),
         ),
       ],
       const Divider(),
-      const ListTile(
-        leading: Icon(Icons.info_outline),
-        title: Text('About'),
-        subtitle: Text('Math Copilot AI v1.0.0'),
+      ListTile(
+        contentPadding: EdgeInsets.zero,
+        leading: Icon(Icons.info_outline, color: colorScheme.onSurface),
+        title: Text('About', style: _rowTitleStyle(colorScheme)),
+        subtitle: Text(
+          'Math Copilot AI v1.0.0',
+          style: _rowSubtitleStyle(colorScheme),
+        ),
       ),
     ];
+
+    final iosHeader = Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: Text(
+        'Manage your account and app preferences.',
+        style: _pageSubtitleStyle(colorScheme),
+      ),
+    );
 
     if (isIOS) {
       return CustomScrollView(
@@ -59,7 +108,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
           SliverPadding(
             padding: const EdgeInsets.fromLTRB(16, 10, 16, 24),
-            sliver: SliverList(delegate: SliverChildListDelegate(settingsTiles)),
+            sliver: SliverList(
+              delegate: SliverChildListDelegate([iosHeader, ...settingsTiles]),
+            ),
           ),
         ],
       );
@@ -68,16 +119,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
     return ListView(
       padding: const EdgeInsets.fromLTRB(16, 24, 16, 24),
       children: [
+        Text('Settings', style: _pageTitleStyle(colorScheme)),
+        const SizedBox(height: 4),
         Text(
-          'Settings',
-          style: TextStyle(
-            fontSize: 28,
-            fontWeight: FontWeight.w800,
-            letterSpacing: -0.4,
-            color: colorScheme.onSurface,
-          ),
+          'Manage your account and app preferences.',
+          style: _pageSubtitleStyle(colorScheme),
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: 20),
         ...settingsTiles,
       ],
     );
