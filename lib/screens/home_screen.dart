@@ -1,8 +1,10 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
+import '../data/cheat_sheets_data.dart';
+import '../models/cheat_sheet.dart';
 import 'calculator_screen.dart';
-import 'cheat_sheets_screen.dart';
+import 'cheat_sheet_detail_screen.dart';
 import 'quiz_screen.dart';
 import 'tutor_chat_screen.dart';
 
@@ -78,6 +80,65 @@ const List<_QuizSubjectData> _kQuizSubjects = [
     cardBackgroundColor: Color(0xFFF5F3FF),
   ),
 ];
+
+/// Visual style for cheat-sheet cards & picker — distinct from quiz cards (reference / docs look).
+class _CheatSheetCardStyle {
+  const _CheatSheetCardStyle({
+    required this.subtitle,
+    required this.icon,
+    required this.iconColor,
+    required this.iconBackgroundColor,
+    required this.cardBackgroundColor,
+  });
+
+  final String subtitle;
+  final IconData icon;
+  final Color iconColor;
+  final Color iconBackgroundColor;
+  final Color cardBackgroundColor;
+}
+
+const Map<String, _CheatSheetCardStyle> _kCheatSheetCardStyles = {
+  'algebra': _CheatSheetCardStyle(
+    subtitle: 'Formulas & rules',
+    icon: Icons.auto_stories_outlined,
+    iconColor: Color(0xFF0369A1),
+    iconBackgroundColor: Color(0xFFE0F2FE),
+    cardBackgroundColor: Color(0xFFF0F9FF),
+  ),
+  'geometry': _CheatSheetCardStyle(
+    subtitle: 'Shapes & area',
+    icon: Icons.hexagon_outlined,
+    iconColor: Color(0xFF047857),
+    iconBackgroundColor: Color(0xFFD1FAE5),
+    cardBackgroundColor: Color(0xFFF0FDF4),
+  ),
+  'trigonometry': _CheatSheetCardStyle(
+    subtitle: 'Trig essentials',
+    icon: Icons.stacked_line_chart_outlined,
+    iconColor: Color(0xFFBE123C),
+    iconBackgroundColor: Color(0xFFFFE4E6),
+    cardBackgroundColor: Color(0xFFFFF1F2),
+  ),
+  'calculus': _CheatSheetCardStyle(
+    subtitle: 'Key rules & limits',
+    icon: Icons.description_outlined,
+    iconColor: Color(0xFF155E75),
+    iconBackgroundColor: Color(0xFFCFFAFE),
+    cardBackgroundColor: Color(0xFFECFEFF),
+  ),
+};
+
+_CheatSheetCardStyle _cheatSheetCardStyleFor(CheatSheet sheet) {
+  return _kCheatSheetCardStyles[sheet.id] ??
+      _CheatSheetCardStyle(
+        subtitle: sheet.subtitle,
+        icon: Icons.menu_book_outlined,
+        iconColor: const Color(0xFF087E8B),
+        iconBackgroundColor: const Color(0xFFDDF9FC),
+        cardBackgroundColor: const Color(0xFFF0FCFE),
+      );
+}
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -364,10 +425,82 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  void _openCheatSheets() {
+  void _openCheatSheetDetail(CheatSheet sheet) {
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) => const CheatSheetsScreen()),
+      MaterialPageRoute(
+        builder: (_) => CheatSheetDetailScreen(cheatSheet: sheet),
+      ),
+    );
+  }
+
+  void _showCheatSheetPicker(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      showDragHandle: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (sheetContext) {
+        return Padding(
+          padding: const EdgeInsets.only(bottom: 32),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 16),
+                child: Text(
+                  'Pick a topic',
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                ),
+              ),
+              const SizedBox(height: 8),
+              for (final sheet in cheatSheetsData)
+                () {
+                  final style = _cheatSheetCardStyleFor(sheet);
+                  return ListTile(
+                    leading: Container(
+                      width: 36,
+                      height: 36,
+                      decoration: BoxDecoration(
+                        color: style.iconBackgroundColor,
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Icon(
+                        style.icon,
+                        color: style.iconColor,
+                        size: 20,
+                      ),
+                    ),
+                    title: Text(
+                      sheet.title,
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    subtitle: Text(
+                      style.subtitle,
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w400,
+                        color: Theme.of(sheetContext)
+                            .colorScheme
+                            .onSurfaceVariant,
+                      ),
+                    ),
+                    trailing: const Icon(Icons.chevron_right),
+                    onTap: () {
+                      Navigator.pop(sheetContext);
+                      _openCheatSheetDetail(sheet);
+                    },
+                  );
+                }(),
+            ],
+          ),
+        );
+      },
     );
   }
 
@@ -425,18 +558,36 @@ class _HomeScreenState extends State<HomeScreen> {
     }
 
     if (_shouldShowCheatSheets()) {
-      cards.add(
-        _LearningToolCard(
-          width: cardWidth,
-          icon: Icons.menu_book_outlined,
-          label: 'Cheat Sheets',
-          subtitle: 'Quick formulas and rules',
-          onTap: _openCheatSheets,
-          iconColor: const Color(0xFF087E8B),
-          iconBackgroundColor: const Color(0xFFDDF9FC),
-          cardBackgroundColor: const Color(0xFFF0FCFE),
-        ),
-      );
+      if (_selectedCategory == HomeCategory.cheatSheets) {
+        for (final sheet in cheatSheetsData) {
+          final style = _cheatSheetCardStyleFor(sheet);
+          cards.add(
+            _LearningToolCard(
+              width: cardWidth,
+              icon: style.icon,
+              label: sheet.title,
+              subtitle: style.subtitle,
+              onTap: () => _openCheatSheetDetail(sheet),
+              iconColor: style.iconColor,
+              iconBackgroundColor: style.iconBackgroundColor,
+              cardBackgroundColor: style.cardBackgroundColor,
+            ),
+          );
+        }
+      } else {
+        cards.add(
+          _LearningToolCard(
+            width: cardWidth,
+            icon: Icons.menu_book_outlined,
+            label: 'Cheat Sheets',
+            subtitle: 'Quick formulas and rules',
+            onTap: () => _showCheatSheetPicker(context),
+            iconColor: const Color(0xFF087E8B),
+            iconBackgroundColor: const Color(0xFFDDF9FC),
+            cardBackgroundColor: const Color(0xFFF0FCFE),
+          ),
+        );
+      }
     }
 
     if (cards.isEmpty) {
