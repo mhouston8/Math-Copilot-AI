@@ -25,6 +25,60 @@ extension HomeCategoryLabel on HomeCategory {
   }
 }
 
+/// Shared metadata for quiz subjects (bottom sheet on All + one card per subject on Quizzes pill).
+class _QuizSubjectData {
+  const _QuizSubjectData({
+    required this.label,
+    required this.subtitle,
+    required this.icon,
+    required this.iconColor,
+    required this.iconBackgroundColor,
+    required this.cardBackgroundColor,
+  });
+
+  final String label;
+  final String subtitle;
+  final IconData icon;
+  final Color iconColor;
+  final Color iconBackgroundColor;
+  final Color cardBackgroundColor;
+}
+
+const List<_QuizSubjectData> _kQuizSubjects = [
+  _QuizSubjectData(
+    label: 'Algebra',
+    subtitle: 'Equations & expressions',
+    icon: Icons.functions,
+    iconColor: Color(0xFF4338CA),
+    iconBackgroundColor: Color(0xFFE0E7FF),
+    cardBackgroundColor: Color(0xFFF4F5FF),
+  ),
+  _QuizSubjectData(
+    label: 'Geometry',
+    subtitle: 'Shapes, angles & area',
+    icon: Icons.square_outlined,
+    iconColor: Color(0xFF0F766E),
+    iconBackgroundColor: Color(0xFFCCFBF1),
+    cardBackgroundColor: Color(0xFFF0FDFA),
+  ),
+  _QuizSubjectData(
+    label: 'Trigonometry',
+    subtitle: 'Trig functions & triangles',
+    icon: Icons.show_chart,
+    iconColor: Color(0xFFB45309),
+    iconBackgroundColor: Color(0xFFFFEDD5),
+    cardBackgroundColor: Color(0xFFFFF7ED),
+  ),
+  _QuizSubjectData(
+    label: 'Calculus',
+    subtitle: 'Derivatives & integrals',
+    icon: Icons.timeline,
+    iconColor: Color(0xFF7E22CE),
+    iconBackgroundColor: Color(0xFFF3E8FF),
+    cardBackgroundColor: Color(0xFFF5F3FF),
+  ),
+];
+
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
@@ -238,38 +292,14 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  void _showSubjectPicker(BuildContext context) {
-    const subjects = [
-      {
-        'label': 'Algebra',
-        'subtitle': 'Solve equations, expressions, and variables.',
-        'icon': Icons.functions,
-        'iconColor': Color(0xFF4338CA),
-        'iconBg': Color(0xFFE0E7FF),
-      },
-      {
-        'label': 'Geometry',
-        'subtitle': 'Angles, shapes, area, and spatial reasoning.',
-        'icon': Icons.square_outlined,
-        'iconColor': Color(0xFF0F766E),
-        'iconBg': Color(0xFFCCFBF1),
-      },
-      {
-        'label': 'Trigonometry',
-        'subtitle': 'Sine, cosine, tangent, and triangle relationships.',
-        'icon': Icons.show_chart,
-        'iconColor': Color(0xFFB45309),
-        'iconBg': Color(0xFFFFEDD5),
-      },
-      {
-        'label': 'Calculus',
-        'subtitle': 'Limits, derivatives, integrals, and rates of change.',
-        'icon': Icons.timeline,
-        'iconColor': Color(0xFF7E22CE),
-        'iconBg': Color(0xFFF3E8FF),
-      },
-    ];
+  void _openQuizForSubject(String subject) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => QuizScreen(subject: subject)),
+    );
+  }
 
+  void _showSubjectPicker(BuildContext context) {
     showModalBottomSheet(
       context: context,
       showDragHandle: true,
@@ -291,30 +321,30 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
               const SizedBox(height: 8),
-              for (final subject in subjects)
+              for (final subject in _kQuizSubjects)
                 ListTile(
                   leading: Container(
                     width: 36,
                     height: 36,
                     decoration: BoxDecoration(
-                      color: subject['iconBg'] as Color,
+                      color: subject.iconBackgroundColor,
                       borderRadius: BorderRadius.circular(10),
                     ),
                     child: Icon(
-                      subject['icon'] as IconData,
-                      color: subject['iconColor'] as Color,
+                      subject.icon,
+                      color: subject.iconColor,
                       size: 20,
                     ),
                   ),
                   title: Text(
-                    subject['label'] as String,
+                    subject.label,
                     style: const TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
                   subtitle: Text(
-                    subject['subtitle'] as String,
+                    subject.subtitle,
                     style: TextStyle(
                       fontSize: 13,
                       fontWeight: FontWeight.w400,
@@ -324,13 +354,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   trailing: const Icon(Icons.chevron_right),
                   onTap: () {
                     Navigator.pop(sheetContext);
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) =>
-                            QuizScreen(subject: subject['label'] as String),
-                      ),
-                    );
+                    _openQuizForSubject(subject.label);
                   },
                 ),
             ],
@@ -369,18 +393,35 @@ class _HomeScreenState extends State<HomeScreen> {
     final cards = <Widget>[];
 
     if (_shouldShowQuizzes()) {
-      cards.add(
-        _LearningToolCard(
-          width: cardWidth,
-          icon: Icons.quiz_outlined,
-          label: 'Quizzes',
-          subtitle: 'Test your math skills',
-          onTap: () => _showSubjectPicker(context),
-          iconColor: _indigo,
-          iconBackgroundColor: const Color(0xFFE6E8FF),
-          cardBackgroundColor: const Color(0xFFF4F6FF),
-        ),
-      );
+      if (_selectedCategory == HomeCategory.quizzes) {
+        for (final subject in _kQuizSubjects) {
+          cards.add(
+            _LearningToolCard(
+              width: cardWidth,
+              icon: subject.icon,
+              label: subject.label,
+              subtitle: subject.subtitle,
+              onTap: () => _openQuizForSubject(subject.label),
+              iconColor: subject.iconColor,
+              iconBackgroundColor: subject.iconBackgroundColor,
+              cardBackgroundColor: subject.cardBackgroundColor,
+            ),
+          );
+        }
+      } else {
+        cards.add(
+          _LearningToolCard(
+            width: cardWidth,
+            icon: Icons.quiz_outlined,
+            label: 'Quizzes',
+            subtitle: 'Test your math skills',
+            onTap: () => _showSubjectPicker(context),
+            iconColor: _indigo,
+            iconBackgroundColor: const Color(0xFFE6E8FF),
+            cardBackgroundColor: const Color(0xFFF4F6FF),
+          ),
+        );
+      }
     }
 
     if (_shouldShowCheatSheets()) {
